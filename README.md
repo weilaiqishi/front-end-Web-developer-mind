@@ -18,3 +18,6 @@ https://www.codewars.com/kata/latest/my-languages?tags=Arrays%2CStrings%2CObject
 
 html css学习做牛客网的题目
 https://www.nowcoder.com/intelligentTest
+
+目标
+https://juejin.im/post/5e85ec79e51d4547153d0738
