@@ -8,16 +8,4 @@ https://www.xmind.cn/
 http://blog.poetries.top/FE-Interview-Questions/simply/#%E4%B8%80%E3%80%81css%E7%9B%B8%E5%85%B3
 
 知识补充
-掘金 知乎 百度
-
-js学习终点看类型转换 函数（作用域与作用域链） 对象 （原型与原型链）
-
-练习js数组 字符串 对象API
-建议每天三题（简单的就行）来巩固
-https://www.codewars.com/kata/latest/my-languages?tags=Arrays%2CStrings%2CObjects
-
-html css学习做牛客网的题目
-https://www.nowcoder.com/intelligentTest
-
-目标
-https://juejin.im/post/5e85ec79e51d4547153d0738
+掘金 牛客网 知乎 百度
