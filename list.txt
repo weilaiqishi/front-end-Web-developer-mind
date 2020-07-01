@@ -1,14 +1,34 @@
+前端\mvvm\vue\使用和原理\VUE组件通信
+props和emit
+.sync v-model源码
+vue $emit 调用父组件异步方法，执行完毕后再执行子组件的某方法
+
 前端\mvvm\vue\VUE
-结构调整
+props和emit
+.sync v-model源码
+数据驱动
+vuefamily 到vue 中 nextTick 实现 他那个是就的 新的看自己的nexttick mind
+todo v-bind 文档
+todo watch的immediate
+todo el-dialog的append-to-body
+*********************************************************************
 
 htmlcssjs
-判断字符串中是否包含某个字符串
-获取元素某一事件上绑定的所有Listener
-es6对象属性简写
-Object.assign
+JSON
+JSON.stringify space 参数
+标准内置对象的分类
+a.x = a = {n: 2}
+执行上下文 词法作用域 提升 预编译期与执行期
+对象遍历
+事件机制
+html+css
 
-前端\back-end\front-end solution for admin
-elementUI中input框无法输入的问题
+todo 高程第四章变量、作用域和内存
 
-前端\Engineering & CICD
-前端工程化
+*********************************************************************
+
+前端\Engineering & CICD\webpack
+vue-cli构建脚手架import路径中@的意思
+
+前端\Engineering & CICD\前端协作规范
+前端协作规范
