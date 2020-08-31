@@ -1,0 +1,11 @@
+### 定义一些变量
+### @api = https://cloud.xiaohudi.com/api
+@api = http://localhost:3000/api
+
+### 获取服务器状态
+GET {{api}}/~node/health
+Content-Type: application/json
+
+### 获取服务
+GET {{api}}/~node/services
+Content-Type: application/json
