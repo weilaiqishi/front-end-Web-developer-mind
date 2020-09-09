@@ -1,31 +1,19 @@
-前端\mvvm\vue\使用和原理\VUE组件通信
-props和emit
-.sync v-model源码
-vue $emit 调用父组件异步方法，执行完毕后再执行子组件的某方法
-
 前端\mvvm\vue\VUE
-props和emit
-.sync v-model源码
-数据驱动
+  整理v-model
+  检测数据变化
+  initProps
+  Vue.set
+  v-on
+
+
 
 todo v-bind 文档
 todo watch的immediate
 *********************************************************************
 
 htmlcssjs
-JSON
-JSON.stringify space 参数
-标准内置对象的分类
-a.x = a = {n: 2}
-执行上下文 词法作用域 提升 预编译期与执行期
-对象遍历
-事件机制
-html+css
+  Event Loop
 
 todo 高程第四章变量、作用域和内存
-*********************************************************************
-前端\Engineering & CICD\webpack
-vue-cli构建脚手架import路径中@的意思
-
-前端\Engineering & CICD\前端协作规范
-前端协作规范
+tode Chrome的Performance工具
+todo 手写async/await
