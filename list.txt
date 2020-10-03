@@ -1,19 +1,12 @@
 前端\mvvm\vue\VUE
-  整理v-model
-  检测数据变化
-  initProps
-  Vue.set
-  v-on
+vue-router使用
 
 
 
-todo v-bind 文档
-todo watch的immediate
+
 *********************************************************************
-
 htmlcssjs
-  Event Loop
 
-todo 高程第四章变量、作用域和内存
-tode Chrome的Performance工具
-todo 手写async/await
+
+*********************************************************************
+前端\Engineering & CICD\webpack
