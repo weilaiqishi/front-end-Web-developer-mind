@@ -1,0 +1,11 @@
+let readline = require('readline')
+let rl = readline.createInterface({input: process.stdin, output: process.stdout})
+let lineNum = 2
+let intput = []
+rl.on('line', (line) => {
+  input.push(line);
+  if (input.length === lineNum) {
+    console.log(函数)
+    rl.close
+  }
+})
