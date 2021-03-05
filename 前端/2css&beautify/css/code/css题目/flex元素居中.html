@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用flex实现元素水平垂直居中</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        #wrap{
+            width: 500px;
+            height: 500px;
+            background: grey;
+            /*position: relative;*/
+            /*新版flex*/
+            /*display: flex;
+            justify-content: center;
+            align-items: center;*/
+            /*老版*/
+            display: -webkit-box;
+            -webkit-box-pack: center;
+            -webkit-box-align: center;
+        }
+        #wrap .box{
+            width: 200px;
+            height: 200px;
+            background: pink;
+
+            /* 不使用flex的方法一*/
+            /*position: absolute;
+            top: 50%;
+            left: 50%;*/
+            /*transform: translate(-50%,-50%);*/
+            /*transform: translate(-50%,-50%);与
+              margin-left: -100px;
+              margin-top: -100px;
+              效果一样*/
+            /*margin-left: -100px;
+            margin-top: -100px;*/
+
+            /*不使用flex的方法二*/
+            /*position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;*/
+        }
+    </style>
+</head>
+<body>
+<div id="wrap">
+    <div class="box"></div>
+</div>
+</body>
+</html>

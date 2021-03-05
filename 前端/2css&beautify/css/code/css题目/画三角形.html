@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用纯css创建一个三角形</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        #box{
+            width: 0px;
+            height: 0px;
+
+            border: 100px solid;
+            /*正方形中一边填满就会出现三角形*/
+            border-top-color: red;
+            border-right-color: transparent;
+            border-bottom-color: transparent;
+            border-left-color: transparent;
+        }
+    </style>
+</head>
+<body>
+<div id="box"></div>
+</body>
+</html>

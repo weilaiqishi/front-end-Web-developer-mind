@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .wrap{
+            width: 800px;
+            height: 400px;
+            position: relative;
+        }
+        .list{
+            width: 800px;
+            height: 400px;
+            list-style: none;
+            position: relative;
+            padding: 0;
+        }
+        .item{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            color: white;
+            font-size: 50px;
+            opacity: 0;
+            transition: all .8s;
+        }
+        .item.active{
+              opacity: 1;
+              z-index: 10;
+        }
+        .item:nth-child(1){
+            background-color: black;
+        }
+        .item:nth-child(2){
+            background-color: red;
+        }
+        .item:nth-child(3){
+            background-color: goldenrod;
+        }
+        .item:nth-child(4){
+            background-color: green;
+        }
+        .item:nth-child(5){
+            background-color: pink;
+        }
+        .btn{
+            width: 50px;
+            height: 100px;
+            position: absolute;
+            top: 150px;
+            z-index: 100;
+        }
+        #goPre{
+            left: 0px;
+        }
+        #goNext{
+            right: 0px;
+        }
+
+        .pointList{
+            padding-left: 0px;
+            list-style: none;
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1000;
+        }
+        .point{
+            width: 8px;
+            height: 8px;
+            background-color: rgba(0,0,0,0.4);
+            border-radius: 100%;
+            float: left;
+            margin-right: 14px;
+            border-style: solid;
+            border-width: 2px;
+            border-color: rgba(255,255,255,0.6);
+        }
+        .point.active{
+            background-color: rgba(255,255,255,0.4);
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <ul class="list">
+            <li class="item active">0</li>
+            <li class="item">1</li>
+            <li class="item">2</li>
+            <li class="item">3</li>
+            <li class="item">4</li>
+        </ul>
+        <ul class="pointList">
+            <li class="point active" data-index='0'></li>
+            <li class="point" data-index='1'></li>
+            <li class="point" data-index='2'></li>
+            <li class="point" data-index='3'></li>
+            <li class="point" data-index='4'></li>
+        </ul>
+        <button class="btn" id="goPre"><<</button>
+        <button class="btn" id="goNext">>></button>
+    </div>
+    <script>
+        var items = document.getElementsByClassName('item');
+        var goPreBtn = document.getElementById('goPre');
+        var goNextBtn = document.getElementById('goNext');
+
+        var index = 0;
+
+        var clearActive = function(){
+            for(let i=0;i<5;i++){
+                items[i].className = 'item';
+                points[i].className = 'point';
+            }
+        }
+
+        var goIndex = function(){
+            clearActive();
+            if(index === 5){
+                index = 0;
+            }
+            items[index].className = 'item active';
+            points[index].className = 'point active';
+        }
+
+        var goNext = function(){
+            if(index === 4){
+                index = 0;
+                goIndex();
+                return;
+            }
+            index ++;
+            goIndex();
+        }
+
+        goNextBtn.addEventListener('click',function(){
+            goNext();
+            time = 0;
+        })
+
+        var goPre = function(){
+            if(index === 0){
+                index = 4;
+                goIndex();
+                return;
+            }
+            index --;
+            goIndex();
+        }
+
+        goPreBtn.addEventListener('click',function(){
+            goPre();
+            time = 0;
+        })
+
+        var points = document.getElementsByClassName('point');
+        var pointList = document.getElementsByClassName('pointList');
+        pointList[0].onclick = function(event){
+            let target = event.target.closest('li');
+            if(!target) return;
+            let pointIndex = target.getAttribute('data-index');
+            index = pointIndex;
+            goIndex();
+            time = 0;
+        }
+
+        var time = 0;
+        
+        setInterval(function(){
+            time++;
+            if(time == 20){
+                goNext();
+                time = 0;
+            }
+        },100)
+
+    </script>
+</body>
+</html>

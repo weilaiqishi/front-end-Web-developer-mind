@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .div {
+            width: 100px;
+            height: 100px;
+            background: yellow;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="./router.js"></script>
+    <a href="#/setting">点击这个就切换路径了</a>
+    <a href="#/back">点击这个就又切换路径了</a>
+    <div class="div wrap">page1</div>
+    <div class="div settingWrap">page2</div>
+    <script>
+        // new 一个 Router 实例
+        window.Router = new newRouter()
+        // 路由实例初始化
+        window.Router.init()
+        Router.route('/setting', () => {
+            document.querySelector(".wrap").style.display = "none"
+            document.querySelector(".settingWrap").style.display = "block"
+        })
+        Router.route('/back', () => {
+            document.querySelector(".wrap").style.display = "block"
+            document.querySelector(".settingWrap").style.display = "none"
+        })
+    </script>
+</body>
+
+</html>

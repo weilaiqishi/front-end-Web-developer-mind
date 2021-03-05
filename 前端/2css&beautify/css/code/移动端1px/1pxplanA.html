@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width initial-scale=1">
+    <title>1px物理像素实现</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        #box{
+            width: 0.5rem;
+            height: 0.5rem;
+            /* rem单位的被缩放后要乘回来*/
+            border-bottom: 10px solid #000;
+        }
+    </style>
+</head>
+<body>
+<div id="box"></div>
+</body>
+<script>
+    window.onload = function(){
+        // 像素比 = 物理像素 / css像素
+        var dpr = window.devicePixelRatio;
+        // 缩放比
+        var scale = 1/dpr;
+
+        // 获取meta标签
+        var metaNode = document.querySelector('meta[name="viewport"]');
+        metaNode.setAttribute('content',`width=device-width initial-scale=${scale}`);
+
+        // 页面中元素宽度，高度，比例反向乘回来
+        var htmlNode = document.querySelector('html');
+        htmlNode.style.fontSize = width * dpr + 'px';
+    }
+</script>
+</html>
