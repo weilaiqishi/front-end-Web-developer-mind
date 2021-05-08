@@ -1,0 +1,99 @@
+[面试真题]-具有依赖关系的任务执行
+
+Jessio 2019-07-29 00:28:24  1469  收藏
+分类专栏： java 算法 图 文章标签： 任务执行 任务依赖
+版权
+题目
+要求任务之间有一定的依赖关系，若b依赖于a，则a任务执行完成之后，b才能执行。所有任务都同时到达且串行执行，求任务的最小平均响应时间。
+
+输入实例：
+5 6  # 5为任务个数 6为关系个数
+1 2 1 1 1 # 分别为任务1到任务5的执行时间
+1 2 # 任务2依赖于任务1，下同
+1 3
+1 4
+2 5
+3 5
+4 5
+1
+2
+3
+4
+5
+6
+7
+8
+输出
+1 3 4 2 5
+1
+算法
+public class Main{
+    static class Task{
+        int id;
+        int time;
+        int waits = 0;
+        LinkedList<Integer> refs = new LinkedList<>();
+        public Task(int id, int time) {
+            this.id = id;
+            this.time = time;
+        }
+
+    }
+    public static void main(String[] args) {
+        Scanner s = new Scanner(System.in);
+        PriorityQueue<Task> can = new PriorityQueue<>((o1, o2) -> {
+            if (o1.waits<o2.waits)return -1;
+            if(o1.waits>o2.waits)return 1;
+            if(o1.time<o2.time)return -1;
+            if(o1.time>o2.time)return 1;
+            if(o1.id<o2.id)return -1;
+            if(o1.id>o2.id)return 1;
+            return 0;
+        });
+        int m,n;
+        n = s.nextInt();
+        m = s.nextInt();
+        Task[] tasks = new Task[n+1];
+        for (int i = 1; i <= n; i++) {
+            int time = s.nextInt();
+            tasks[i] = new Task(i,time);
+        }
+        for (int i = 0; i < m; i++) {
+            int ai = s.nextInt();
+            int bi = s.nextInt();
+            tasks[bi].waits++;
+            tasks[ai].refs.add(bi);
+        }
+        for (int i = 1; i <= n; i++) {
+
+            if(tasks[i].waits==0)can.add(tasks[i]);
+        }
+        Task next = can.poll();
+        StringBuilder builder = new StringBuilder();
+        builder.append(next.id);
+        while (next!=null){
+            for (Integer t : next.refs) {
+                Task temp = tasks[t];
+                temp.waits--;
+                if(temp.waits==0){
+                    can.add(temp);
+                }
+            }
+            next = can.poll();
+            if(next!=null){
+                builder.append(" "+next.id);
+
+            }
+        }
+        System.out.println(builder.toString());
+
+    }
+}
+思路：由于是串行执行任务，我们维护一个优先级队列
+
+优先级队列判定规则：先判断执行时间长短，短的优先，再判断id大小，小的优先
+每个节点维护一个等待节点个数·wait，wait为0时才能放入优先级队列中执行
+从优先级队列中取任务执行每执行一个任务，则将其所有后继任务数的wait进行wait--
+————————————————
+版权声明：本文为CSDN博主「Jessio」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/qq_34064803/article/details/97621692
