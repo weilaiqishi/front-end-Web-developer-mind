@@ -1,2 +1,1 @@
-前端\3mvvm\react\react.xmind
-react技术揭秘
+前端\3mvvm\react
