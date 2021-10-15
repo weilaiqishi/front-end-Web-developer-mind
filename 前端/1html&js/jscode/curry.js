@@ -13,7 +13,7 @@ function curry(fn) {
 }
 
 const count4 = function(a,b,c,d) {
-    return a,b,c,d
+    return a+b+c+d
 }
 debugger
 let curryCount4 = curry(count4)
