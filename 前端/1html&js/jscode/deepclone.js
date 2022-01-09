@@ -1,3 +1,6 @@
+// JSON.parse(JSON.stringify());
+// 这种写法非常简单，而且可以应对大部分的应用场景，但是它还是有很大缺陷的，比如拷贝其他引用类型、拷贝函数、循环引用等情况。
+
 // 乞丐版
 // function deepClone (target) {
 //     if (typeof target !== 'object' || target === null) { return target }
@@ -64,6 +67,76 @@
 //     return result
 // }
 
+// https://juejin.cn/post/6844903929705136141#heading-6  如何写出一个惊艳面试官的深拷贝?
+// 考虑数据类型
+const mapTag = '[object Map]'
+const setTag = '[object Set]'
+const arrayTag = '[object Array]'
+const objectTag = '[object Object]'
+const argsTag = '[object Arguments]'
+
+const boolTag = '[object Boolean]'
+const dateTag = '[object Date]'
+const numberTag = '[object Number]'
+const stringTag = '[object String]'
+const symbolTag = '[object Symbol]'
+const errorTag = '[object Error]'
+const regexpTag = '[object RegExp]'
+const funcTag = '[object Function]'
+
+const deepTag = [mapTag, setTag, arrayTag, objectTag, argsTag]
+function getType (target) {
+    return Object.prototype.toString.call(target)
+}
+function cloneRegExp (regExp) { return new RegExp(regExp.source, regExp.flags) }
+function deepClone1 (target, map = new WeakMap()) {
+    // 原始类型
+    if (typeof target !== 'object' || target === null) { return target }
+    // 破除循环引用
+    if (map.has(target)) { return map.get(target) }
+
+    const type = getType(target)
+    // 不可遍历类型 （Boolean/Number/String/Error/date/regexp）
+    switch (type) {
+        case boolTag:
+        case numberTag:
+        case stringTag:
+        case errorTag:
+        case dateTag:
+            return new target.constructor(target)
+        case regexpTag:
+            return cloneRegExp(target)
+    }
+
+    console.log(type)
+
+    // 克隆set
+    if (type === setTag) {
+        const cloneTarget = new Set()
+        target.forEach(value => {
+            cloneTarget.add(deepClone1(value, map))
+        })
+        return cloneTarget
+    }
+
+    // 克隆map
+    if (type === mapTag) {
+        const cloneTarget = new Map()
+        target.forEach((value, key) => {
+            cloneTarget.set(key, deepClone1(value, map))
+        })
+        return cloneTarget
+    }
+
+    // 数组和对象
+    const result = Array.isArray(target) ? [] : {}
+    map.set(target, result)
+    Reflect.ownKeys(target).forEach(key => {
+        result[key] = deepClone1(target[key], map)
+    })
+    return result
+}
+
 
 // 广度优先遍历
 function deepClone (target) {
@@ -119,5 +192,13 @@ const a = {
     a2: null,
     a3: 123
 }
-a.book.a = a
+a.book.a = a // Circular类型，即循环应用
 console.log(deepClone(a))
+
+
+const b = {
+    date: new Date(),
+    map: new Map([["key1", "value1"], ["key2", "value2"]]),
+    set: new Set([1,2])
+}
+console.log(deepClone1(b))
