@@ -8,7 +8,7 @@ Vue相关知识分原理和开发实战，本文主要是copy网上的答案，�
 
 先上一张知识图谱
 
-![Vue3源码知识图谱 花果山大圣](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/vue/vue3%E6%BA%90%E7%A0%81%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1%20%E8%8A%B1%E6%9E%9C%E5%B1%B1%E5%A4%A7%E5%9C%A3.png)
+![Vue3源码知识图谱 花果山大圣](https://cdn.jsdelivr.net/gh/weilaiqishi/mymarkdownpicture/vue/soundCode_vue3源码知识图谱花果山大圣.png)
 
 Vue原理大致有 运行时（数据驱动）、编译模块、响应式系统
 
