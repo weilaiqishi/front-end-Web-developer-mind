@@ -21,3 +21,21 @@
 [思维导图工具 xmind 下载地址](https://www.xmind.cn/)
 [掘金主页：程序员解决师](https://juejin.im/user/55fa4985ddb2dd0026a05f48/posts)
 [知乎专栏：霸天的前端自留地](https://zhuanlan.zhihu.com/c_57862727)
+
+## ubuntu20安装nvm
+
+<https://www.jianshu.com/p/8c3e782c7be1>
+
+[查看nvm版本](https://github.com/nvm-sh/nvm/releases)
+
+```shell
+sudo vim /etc/hosts
+```
+
+添加hosts防墙
+199.232.96.133 raw.githubusercontent.com
+20.205.243.166 github.com
+
+```shell
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+```

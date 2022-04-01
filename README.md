@@ -38,6 +38,14 @@
 
 - [小程序 面试题](./终端/../前端/终端/小程序面试题.md)
 
+## Node.js
+
+- [Node.js 全文检索](./others/webserver/node/[Node.js全文检索]%20机翻%20Full-text%20search%20with%20Node.js%20and%20ElasticSearch%20on%20Docker.md)
+- [linux wsl](./others/wsl.md)
+- [linux docker](./others/Docker.md)
+- [linux 命令基础](./others/后端技能linux基础.md)
+- [linux nginx](./others/后端技能nginx基础.md)
+
 ## 导图文件要用xmind打开
 
 <https://www.xmind.cn>
