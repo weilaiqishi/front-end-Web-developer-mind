@@ -10,6 +10,7 @@
 
 配置文件
 /etc/nginx/nginx.conf
+/etc/nginx/conf.d/
 /usr/local/nginx/conf/nginx.conf
 程序文件
 /usr/sbin/nginx
