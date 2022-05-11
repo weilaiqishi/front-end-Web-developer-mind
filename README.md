@@ -37,11 +37,12 @@
 
 ## 终端
 
-- [小程序 面试题](./终端/../前端/终端/小程序面试题.md)
+- [小程序 面试题](./前端/cross-platform/小程序面试题.md)
 
 ## WebServer Node.js
 
 - [Node.js 全文检索](./others/webserver/node/[Node.js全文检索]%20机翻%20Full-text%20search%20with%20Node.js%20and%20ElasticSearch%20on%20Docker.md)
+- [Node.js RateLimit 如何对接口进行限流.md](./others/webserver/node/Web应用功能/[RateLimit]%20如何对接口进行限流.md)
 - [linux wsl](./others/wsl.md)
 - [linux docker](./others/Docker.md)
 - [linux 命令基础](./others/后端技能linux基础.md)

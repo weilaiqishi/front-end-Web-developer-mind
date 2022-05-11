@@ -1,3 +1,5 @@
+// Dependency Graph https://leetcode.com/discuss/general-discussion/399344/dependency-graph
+
 // 分析一个项目的依赖结构，并按依赖优先级排序。
 // 已知一个项目的依赖结构，期望在前端通过 loader 的方式异步加载相关的组件，而我们期望依赖在加载的过程中：
 
