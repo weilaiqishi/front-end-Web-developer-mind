@@ -1,12 +1,10 @@
-// 栈思想
 function flat (arr) {
     const result = []
-    const stack = [].concat(arr)  // 将数组元素拷贝至栈，直接赋值会改变原数组
-    //如果栈不为空，则循环遍历
-    while (stack.length !== 0) {
-        const val = stack.pop()
+    const queue = [].concat(arr)  // 将数组元素拷贝至栈，直接赋值会改变原数组
+    while (queue.length !== 0) {
+        const val = queue.shift()
         if (Array.isArray(val)) {
-            stack.push(...val) //如果是数组再次入栈，并且展开了一层
+            queue.unshift(...val) //如果是数组则展开一层插入队首
         } else {
             result.push(val) //如果不是数组就将其取出来放入结果数组中
         }
