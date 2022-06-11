@@ -1,3 +1,4 @@
+// 3. 组合继承
 function SuperType(name) {
     this.name = name
     this.colors = ['red', 'blue', 'green']

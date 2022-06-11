@@ -1,6 +1,6 @@
 // JavaScript常用八种继承方案
 // https://juejin.cn/post/6844903696111763470
-
+// 1. 原型链继承
 function SuperType() {
   this.property = true;
 }

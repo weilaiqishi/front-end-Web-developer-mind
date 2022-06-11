@@ -1,3 +1,4 @@
+// 2. 盗用构造函数继承
 function SuperType() {
     this.colors = ['red', 'blue', 'green']
 }

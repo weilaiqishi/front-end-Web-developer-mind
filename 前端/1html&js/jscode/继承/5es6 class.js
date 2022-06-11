@@ -1,4 +1,5 @@
-  class Rectangle {
+// 5. es6 class
+class Rectangle {
     // constructor
     constructor (height, width) {
         this.height = height

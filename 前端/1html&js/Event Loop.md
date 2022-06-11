@@ -75,7 +75,7 @@ JavaScript 是用于实现网页交互逻辑的，涉及到 dom 操作，如果�
 
 为了支持高优先级任务调度，就搞一个高优先级的任务队列，每执行完一个普通任务，都去把所有高优先级的任务给执行完，之后再去执行普通任务。
 其中普通任务叫做 MacroTask（宏任务），高优任务叫做 MicroTask（微任务）。
-**宏任务包括：setTimeout、setInterval、requestAnimationFrame、Ajax、fetch、script 标签的代码。**
+**宏任务包括：setTimeout、setInterval、setImmediate(IE10)、requestAnimationFrame、Ajax、fetch、script 标签的代码。**
 **微任务包括：Promise.then、MutationObserver、Object.observe。**
 怎么理解宏微任务的划分呢？
 定时器、网络请求这种都是在别的线程跑完之后通知主线程的普通异步逻辑，所以都是宏任务。
@@ -86,6 +86,78 @@ JavaScript 是用于实现网页交互逻辑的，涉及到 dom 操作，如果�
 每次 loop 结束都 check 的方式来综合渲染、JS 执行、worker 等，让它们都能在一个线程内得到执行（渲染其实是在别的线程，但是会和 JS 线程相互阻塞）。
 ![一次loop](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/93dc8465f5304cf8977fe005d6f0ef15~tplv-k3u1fbpfcp-watermark.awebp)
 
+## 浏览器多进程、JS单线程，EventLoop的相爱相杀
+
+<https://juejin.im/post/6844903977713139719>
+
+### CPU、进程、线程之间的关系
+
+进程是cpu资源分配的最小单位
+（是能拥有资源和独立运行的最小单位）
+
+线程是cpu调度的最小单位
+（线程是建立在进程的基础上的一次程序运行单位，
+一个进程中可以有多个线程）
+
+单线程与多线程，都是指在一个进程内的单和多。浏览器是多进程的，每一个Tab页，都是一个独立的进程
+
+### 浏览器包含了哪些进程
+
+主进程
+
+- 协调控制其他子进程（创建，销毁）
+- 浏览器界面显示，用户交互，前进、后退、收藏
+- 将渲染进程得到的内存中的Bitmap，绘制到用户界面上
+- 处理不可见操作，网络请求，文件访问等
+
+第三方插件进程
+
+- 每种类型的插件对应一个进程，仅当使用该插件时才创建
+
+GPU进
+
+- 用于3D绘制等
+
+渲染进程，就是我们说的浏览器内核
+
+- 负责页面渲染，脚本执行，事件处理等
+- 每个tab页一个渲染进程
+
+对于普通的前端操作来说，最重要的是渲染进程
+**浏览器内核（渲染进程）渲染进程包含的线程**
+
+GUI渲染线程
+
+- 负责渲染页面，布局和绘制
+- 页面需要重绘和回流时，该线程就会执行
+- 与js引擎线程互斥，防止渲染结果不可预期
+
+JS引擎线程
+
+- 负责处理解析和执行javascript脚本程序
+- 只有一个JS引擎线程（单线程）
+-与GUI渲染线程互斥，防止渲染结果不可预期
+
+事件触发线程
+
+- 用来控制事件循环（鼠标点击、setTimeout、ajax等）
+- 当事件满足触发条件时，将事件放入到JS引擎所在的执行队列中
+
+定时触发器线程
+
+- setInterval与setTimeout所在的线程
+- 定时任务并不是由JS引擎计时的，是由定时触发线程来计时的
+- 计时完毕后，通知事件触发线程
+
+异步http请求线程
+
+- 浏览器有一个单独的线程用于处理AJAX请求
+- 当请求完成时，若有回调函数，通知事件触发线程
+
+**为什么 GUI 渲染线程与 JS 引擎线程互斥**
+这是由于 JS 是可以操作 DOM 的，如果同时修改元素属性并同时渲染界面(即 JS线程和UI线程同时运行)， 那么渲染线程前后获得的元素就可能不一致了。
+因此，为了防止渲染出现不可预期的结果，浏览器设定 GUI渲染线程和JS引擎线程为互斥关系，当JS引擎线程执行时GUI渲染线程会被挂起，GUI更新则会被保存在一个队列中等待JS引擎线程空闲时立即被执行。
+
 ## Node.js 的 Event loop
 
 浏览器的 Event Loop 只分了两层优先级，一层是宏任务，一层是微任务。但是宏任务之间没有再划分优先级，微任务之间也没有再划分优先级。
@@ -94,9 +166,55 @@ JavaScript 是用于实现网页交互逻辑的，涉及到 dom 操作，如果�
 
 于是就把宏任务队列拆成了五个优先级：Timers、Pending、Poll、Check、Close。
 ![Node宏任务五个优先级](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2f16ec03bf614d5b9d01fe55b126758b~tplv-k3u1fbpfcp-zoom-in-crop-mark:1304:0:0:0.awebp?)
-`Timers Callback`： 涉及到时间，肯定越早执行越准确，所以这个优先级最高很容易理解。
+`Timers Callback`： 涉及到时间，肯定越早执行越准确，所以这个优先级最高很容易理解。理论上来说，应该是时间一到就立即执行callback回调，但是由于system的调度可能会延时，达不到预期时间。
 `Pending Callback`：处理网络、IO 等异常时的回调，有的 *niux 系统会等待发生错误的上报，所以得处理下。
-`Poll Callback`：处理 IO 的 data，网络的 connection，服务器主要处理的就是这个。
-`Check Callback`：执行 setImmediate 的回调，特点是刚执行完 IO 之后就能回调这个。
-`Close Callback`：关闭资源的回调，晚点执行影响也不到，优先级最低。
+`idle, prepare`: 仅在内部使用。
+`Poll Callback`：最重要的阶段，处理 IO 的 data，网络的 connection，服务器主要处理的就是这个。
+`Check Callback`：执行 setImmediate 的回调，是将事件插入到事件队列尾部，主线程和事件队列的函数执行完成之后，立即执行setImmediate指定的回调函数)的callback。也就是说刚执行完 IO 之后就能回调这个。
+`Close Callback`：关闭资源的回调，晚点执行影响也不到，优先级最低。例如socket.on('close'[,fn])或者http.server.on('close, fn)。
 ![Node.js 的 Event Loop](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7d212112be464570ba56bd5ea0561fa2~tplv-k3u1fbpfcp-zoom-in-crop-mark:1304:0:0:0.awebp?)
+![Node.js 的 Event Loop](./img/eventloop%20Node.png)
+
+### Process.nextTick()
+
+`process.nextTick()` 虽然它是异步API的一部分，但未在图中显示。
+这是因为process.nextTick()从技术上讲，它不是事件循环的一部分。
+process.nextTick()方法将 callback 添加到 `nextTick队列` 。 
+一旦当前事件轮询队列的任务全部完成，在 `nextTick队列` 中的所有callbacks会被依次调用。
+
+换种理解方式：当每个阶段完成后，如果存在 nextTick队列，就会清空队列中的所有回调函数，并且优先于其他 microtask 执行。
+
+例子
+
+```js
+let bar;
+
+setTimeout(() => {
+  console.log('setTimeout');
+}, 0)
+
+setImmediate(() => {
+  console.log('setImmediate');
+})
+function someAsyncApiCall(callback) {
+  process.nextTick(callback);
+}
+
+someAsyncApiCall(() => {
+  console.log('bar', bar); // 1
+});
+
+bar = 1;
+```
+
+在NodeV10中上述代码执行可能有两种答案，一种为：
+bar 1
+setTimeout
+setImmediate
+(node16稳定为Timeout先打印)
+另一种为：
+bar 1
+setImmediate
+setTimeout
+无论哪种，始终都是先执行process.nextTick(callback)，打印bar 1。
+
