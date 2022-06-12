@@ -1,4 +1,4 @@
-# js原理-执行上下文与作用域
+# js基础-执行上下文与作用域
 
 **名词介绍**
 ECStack: `Execution Context Stack`,执行环境栈；

@@ -1,4 +1,4 @@
-# js数据类型
+# js基础-数据类型
 
 [JavaScript 数据类型和数据结构](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Data_structures#%E5%AF%B9%E8%B1%A1)
 
