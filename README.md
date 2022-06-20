@@ -37,9 +37,10 @@
 
 ## 前端工程化
 
-- [webpack 开发问题收集](./前端/4Engineering%20&%20CICD/webpack/webpack开发问题收集.md)
-- [前端工程化 目标](./前端/4Engineering%20&%20CICD/前端工程化目标.md)
+- [前端工程化 babel 基础](./前端/4Engineering%20&%20CICD/babel/babel基础.md)
 - [前端工程化 monorepo](./前端/4Engineering%20&%20CICD/monorepo/rushjs+pnpm.md)
+- [前端工程化 webpack 开发问题收集](./前端/4Engineering%20&%20CICD/webpack/webpack开发问题收集.md)
+- [前端工程化 目标](./前端/4Engineering%20&%20CICD/前端工程化目标.md)
 
 ## 终端
 

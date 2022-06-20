@@ -126,7 +126,7 @@ function babelLoader(sourceCode, options) {
 - `@babel/runtime`
 - `@babel/plugin-transform-runtime`
 
-第一种实现 `polyfill` 的方式：
+#### 第一种实现 `polyfill` 的方式 `@babel/polyfill`
 
 通过 `@babel/polyfill` 通过往全局对象上添加属性以及直接修改内置对象的 `Prototype` 上添加方法实现 `polyfill` 。
 比如说我们需要支持 `String.prototype.include`，在引入 `@babel/polyfill` 这个包之后，它会在全局 `String` 的原型对象上添加 `include`方法从而支持我们的Js Api。
@@ -189,8 +189,88 @@ import "core-js/modules/es.promise";
 ```
 
 - 在usage情况下，如果我们存在很多个模块，那么无疑会多出很多冗余代码( `import` 语法)。
-
 - 同样在使用 `usage` 时因为是模块内部局部引入 `polyfill` 所以按需在模块内进行引入，而 `entry` 则会在代码入口中一次性引入。
+
+#### `@babel/runtime`
+
+简单来说 `@babel/runtime` 提供了一种不污染全局作用域的 `polyfill` 的方式，在转译会在每个模块中各自实现一遍一些 _extend()， classCallCheck() 之类的辅助工具函数，当我们项目中的模块比较多时每个项目中都实现一次这些方法，这无疑是一种噩梦。
+
+**`@babel/plugin-transform-runtime` 这个插件正式基于 `@babel/runtime` 可以更加智能化的分析我们的代码，同时 `@babel/plugin-transform-runtime` 支持一个 `helper` 参数默认为 true 它会提取 `@babel/runtime` 编译过程中一些 `重复的工具函数` 变成 `外部模块引入的方式` 。**
+
+使用示例
+
+```js
+import commonjs from 'rollup-plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+import babel from '@rollup/plugin-babel';
+
+export default {
+  input: 'src/main.js',
+  output: {
+    file: 'build/bundle.js',
+    format: 'esm',
+    strict: false,
+  },
+  plugins: [
+    commonjs(),
+    resolve(),
+    babel({
+      babelrc: false,
+      babelHelpers: 'runtime',
+      presets: [
+        [
+          '@babel/preset-env',
+          {
+            // 其实默认就是false，这里我为了和大家刻意强调不要混在一起使用
+            useBuiltIns: false,
+          },
+        ],
+      ],
+      plugins: [
+        [
+          '@babel/plugin-transform-runtime',
+          {
+            absoluteRuntime: false,
+            // polyfill使用的corejs版本
+            // 需要注意这里是@babel/runtime-corejs3 和 preset-env 中是不同的 npm 包
+            corejs: 3,
+            // 切换对于 @babel/runtime 造成重复的 _extend() 之类的工具函数提取
+            // 默认为true 表示将这些工具函数抽离成为工具包引入而不必在每个模块中单独定义
+            helpers: true,
+            // 切换生成器函数是否污染全局 
+            // 为true时打包体积会稍微有些大 但生成器函数并不会污染全局作用域
+            regenerator: true,
+            version: '7.0.0-beta.0',
+          },
+        ],
+      ],
+    }),
+  ],
+};
+```
+
+部分打包后的代码
+![@babel/plugin-transform-runtime](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c078bb4db187410194235cb312da8785~tplv-k3u1fbpfcp-zoom-in-crop-mark:1304:0:0:0.awebp?)
+
+`@babel/runtime` 打包后的结果可以明显的看到是借助引入的 `_includesInstanceProperty` 方来调用的 JS方法，例数组includes方法不是直接在 `Array.prototype` 上定义
+
+##### `@babel/runtime` 为什么不适合业务项目
+
+`@babel/runtime` 配合 `@babel/plugin-transform-runtime` 的确可以解决 usage 污染全局作用域的问题，使用它来开发类库看起来非常完美。
+有些小伙伴可能就会想到，既然它提供和 usage 一样的智能化按需引入同时还不会污染全局作用域。
+那么，为什么我不能直接在业务项目中直接使用 `@babel/runtime` ，这样岂不是更好吗？
+答案肯定是否定的，任何事情都存在它的两面性。transform runtime 与环境无关，它并不会因为我们的页面的目标浏览器动态调整 `polyfill` 的内容，而 useBuiltIns 则会根据配置的目标浏览器而决定是否需要引入相应的 `polyfill`。
+
+#### `Polyfill` 最佳实践
+
+**业务**
+在日常业务开发中，对于全局环境污染的问题往往并不是那么重要。而业务代码最终的承载大部分是浏览器端，所以如果针对不同的目标浏览器支持度从而引入相应的 polyfill 无疑会对我们的代码体积产生非常大的影响，此时选择 preset-env 开启 useBuiltIns 的方式会更好一些。
+所以简单来讲，**推荐在日常业务中尽可能使用 `@babel/preset-env` 的 `useBuiltIns` 配置配合需要支持的浏览器兼容性来提供 `polyfill`** 。
+同时关于业务项目中究竟应该选择 useBuiltIns 中的 entry 还是 usage ，我在上边已经和大家详细对比过这两种方式。究竟应该如何选择这两种配置方案，在不同的业务场景下希望大家可以根据场景来选择最佳方案。而不是一概的认为 entry 无用无脑使用 usage 。
+
+**类库**
+在我们开发类库时往往和浏览器环境无关所以在进行 polyfill 时最主要考虑的应该是不污染全局环境，此时选择 `@babel/runtime` 无疑更加合适。
+**在类库开发中仅仅开启 `@babel/preset-env` 的语法转化功能配合 `@babel/runtime` 提供一种不污染全局环境的 `polyfill` 可能会更加适合你的项目场景。**
 
 ## `Babel` 插件开发
 
@@ -462,4 +542,3 @@ module.exports = {
 
 使用我们写好的插件来 `run` 一下
 ![使用babel自定义箭头函数转换插件](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/857ebd263a2a451c89efa447169cbdce~tplv-k3u1fbpfcp-zoom-in-crop-mark:1304:0:0:0.awebp?)
-
