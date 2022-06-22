@@ -3,40 +3,37 @@
 **名词介绍**
 ECStack: `Execution Context Stack`,执行环境栈；
 EC: `EC(G)`全局执行上下文, `EC(fn)`函数执行上下文。 `EC(block)`块级执行上下文
-VO: `Variable Object`变量对象
-AO: `Active Object`活动变量对象
 GO: `Global Object`全局对象
+
+VO: `Variable Object`变量对象(es1 es3)
+AO: `Active Object`活跃对象(es1 es3)
 
 **JS运行关键点**：单线程、同步执行、一个全局上下文、每次函数调用创建新的上下文
 
-**JavaScript运行流程**
-![JavaScript运行流程](https://img-blog.csdnimg.cn/b1156a927075460fa529d6bde0596150.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAY29kZXJAaHU=,size_20,color_FFFFFF,t_70,g_se,x_16)
-
-全局预编译(脚本代码块script执行前)
-
-1. 查找全局变量声明（包括隐式全局变量声明，省略var声明），变量名作全局对象的属性，值为undefined
-2. 查找函数声明，函数名作为全局对象的属性，值为函数引用
-
-预编译与执行
-
-1. 语法分析
-   语法分析就是引擎检查代码有没有什么低级的语法错误
-2. 函数预编译(函数执行前)
-   在内存中开辟一些空间，存放一些变量与函数
-   1. 创建 `AO对象（Active Object）`
-   2. 查找 `函数形参` 及 `函数内变量声明`，形参名及变量名作为 `AO对象` 的属性，值为undefined
-   3. 实参形参相统一，实参值赋给形参
-   4. 查找 `函数声明`，函数名作为AO对象的属性，值为函数引用
-3. 解释执行
-   执行代码
-
 **VO/AO**
 `VO(变量对象)`, 也就是 `variable object` , 创建执行上下文时与之关联的会有一个变量对象，该上下文中的所有变量和函数全都保存在这个对象中。
-`AO(活动对象)`, 也就是`activation object`,进入到一个执行上下文时，此执行上下文中的变量和函数都可以被访问到，可以理解为被激活了。
+`AO(活跃对象)`, 也就是`activation object`,进入到一个执行上下文时，此执行上下文中的变量和函数都可以被访问到，可以理解为被激活了。
 
 活动对象和变量对象的区别在于:
 变量对象（VO）是规范上或者是JS引擎上实现的，并不能在JS环境中直接访问。
 当进入到一个执行上下文后，这个变量对象才会被激活，所以叫活动对象（AO），这时候活动对象上的各种属性才能被访问。
+
+**现代的 ECMAScript 早已没有了活跃对象这一概念。广义的活跃对象在不同的场景下也可以有不同的名字，如活跃记录（Activation Record）、栈帧（Stack Frame）等**。
+每当函数被调用的时候，其都会创建一个活跃对象。该对象对开发者不可见，是一个隐藏的数据结构，其中包含了一些函数在执行时必要的信息和绑定，以及返回值的地址等等。
+在 C 语言中，这个对象会在一个栈中被分配生成。当函数返回的时候，该对象会被销毁（或者出栈）。
+JavaScript 与 C 语言不同，它是从堆中分配该对象。且这个活跃对象并不会在函数返回时被自动销毁，它的生命周期与普通对象的垃圾回收机制类似，是根据引用数量决定的。
+
+一个活跃对象包含：
+
+- 对应函数对象的引用；
+- 调用者对应的活跃对象，用于 return 之后的控制权转移；
+- 调用完毕之后用于继续执行后续逻辑的恢复信息，它通常是一个将在函数调用完毕之后立即要执行的指令的地址；
+- 函数对应的形参，从实参初始化而来；
+- 函数中的变量，以 undefined 进行初始化；
+- 函数用于计算复杂表达式的临时变量；
+- this，如果函数作为一个方法被调用，那么 this 通常就是它的宿主对象。
+
+其实 ES5+ 之后的广义“活跃对象”就是对于 ES 1 / 3 定义的活跃对象的一个扩展，并将其应用到了词法环境中。
 
 ## 词法环境 Lexical Environment
 
@@ -308,108 +305,20 @@ c已存在， var一个存在的变量会失效，不用创建初始化，只剩
 
 创建阶段
 
-- 确定this
-- 创建词法环境组件（LexicalEnvironment）、创建变量环境组件（VariableEnvironment）
-  包含 创建作用域链、`参数传递`(函数执行上下文)、变量预解析（变量提升） 和 函数预解析（函数提升）
+- `ThisBinding`：在全局执行上下文中，this总是指向全局对象，例如浏览器环境下this指向window对象。而在函数执行上下文中，this的值取决于函数的调用方式，如果被一个对象调用，那么this指向这个对象。否则this一般指向全局对象window或者undefined（严格模式）。
+- `参数传递`：对于函数执行上下文，还会把形参变量赋值给实参（若是基本类型就传递值，若是引用类型就传递地址值），并添加为执行上下文的属性，实参列表赋值给arguments。添加为执行上下文的属性。
+- `预解析（预编译）`：在上下文创建了一个新的词法环境（Lexical Environment）以后，会先进行一个预编译（预解析）的过程，JS引擎会把代码里面LexicalEnvironment对应的var和function声明存入LexicalEnvironment，VariableEnvironment对于的let、const、class声明存入VariableEnvironment。然后把把LexicalEnvironment和VariableEnvironment指向新创建的词法环境。
+  - 宏观上看我们常有的概念就是预解析，可以分为 变量预解析（变量提升） 和 函数预解析（函数提升）
+  - `变量提升` 就是把所有的变量声明提升到当前的作用域最前面，本质上即在词法环境（Lexical Environment）中赋值为undefined
+  - `函数提升` 即把所有的函数声明提升到当前的作用域最前面，不调用函数，本质上即在VO中保存指向函数对象的地址
+  - 函数提升和变量提升之间，函数提升优先于变量提升，且不会被同名变量提升覆盖（但是后续的赋值操作中会被覆盖（JS的动态特点））。
 
-执行阶段：执行代码，随着函数执行，修改 `AO` 的值
+`代码执行`：在把这个执行上下文压入执行栈并成为正在运行的执行上下文，然后就开始执行代码。其实就是运行代码后对词法环境中的变量进行赋值操作。
 
-#### 示例
+- js代码从上到下执行的过程中，如果遇到赋值的情况，那么就会更新词法环境。
+- arguments把调用这个函数时所传入的参数，通过一个类数组对象接收了。除了传入的参数，我们通过arguments.callee还能获得当前函数的代码。
 
-看以下这段代码
-
-```js
-var scope = "global scope";
-function checkscope(a){
-    var scope2 = 'local scope';
-}
-checkscope(5);
-```
-
-1. 创建全局上下文执行栈：创建 `全局变量globalContext.VO`
-2. 创建checkscope函数：
-   将 `全局变量VO` 保存为 `作用域链` ，
-   设置到函数的 `内部属性[[scope]]`
-
-   ```js
-   checkscope.[[scope]] = [
-     globalContext.VO
-   ]
-   ```
-
-3. 准备执行checkscope函数，创建函数执行上下文：
-   - 第一步是复制[[scope]]，创建作用域链
-
-     ```js
-     checkscopeContext = {
-       Scope: checkscope.[[scope]],
-     }
-     ```
-
-   - 第二步是创建活动对象AO
-
-     ```js
-     checkscopeContext = {
-       AO: {
-         arguments: {
-           0: 5
-           length: 1
-         },
-         a: 5
-         scope2: undefined
-       },
-       Scope: checkscope.[[scope]],
-     }
-     ```
-
-   - 第三步是将活动对象AO放入作用域链顶端
-
-     ```js
-     checkscopeContext = {
-       AO: {
-         arguments: {
-           0: 5
-           length: 1
-         },
-         a: 5
-         scope2: undefined
-       },
-       Scope: [AO, checkscope.[[scope]]],
-     }
-     ```
-
-   - 第四步，求出this，上下文创建阶段结束
-     这里的this等于window
-
-   将checkscope函数执行上下文压入执行上下文栈
-
-   ```js
-   ECStack = [
-     checkscopeContext,
-     globalContext
-   ]
-   ```
-
-4. 进入函数执行阶段：随着函数执行，修改AO的值
-
-   ```js
-   AO: {
-     arguments: {
-       0: 5
-       length: 1
-     },
-     a: 5
-     scope2: 'local scope'
-   }
-   ```
-
-5. 函数执行完毕：函数上下文从执行上下文栈弹出
-
-   ```js
-   ECStack = [
-     globalContext
-   ]
-   ```
+`回收`：对于函数执行上下文，在函数调用后立即被垃圾回收，而全局执行上下文在代码执行期间都存在。
 
 ## 作用域链
 
@@ -460,29 +369,11 @@ b() // 3,不是6
 
 **作用域链**
 **概念**
-函数在定义的时候，把 `父级的变量对象AO/VO` 的集合保存在内部属性 `[[scope]]` 中，该集合称为作用域链
+作用域链就是嵌套的作用域产生的由内到外的搜查机制。
 **作用**
 当函数需要访问不在函数内部声明的变量，会顺着作用域链来查找数据
 子函数会一级一级的向上查找父函数的变量，
 父函数的变量对子对象是可见的，反之不成立。
-**示例**
-
-```js
-function foo() {
-    function bar() {
-        ...
-    }
-}
-
-// foo.[[scope]] = [
-//   globalContext.VO
-// ]
-
-// bar.[[scope]] = [
-//     fooContext.AO,
-//     globalContext.VO
-// ]
-```
 
 ## 闭包
 
