@@ -1,5 +1,7 @@
 # webpack 中的 code spliting 是如何动态加载 chunk 的？
 
+转载自[山月前端工程化三十八讲](https://q.shanyue.tech/engineering/)
+
 一个 `webpack` 的运行时，包括最重要的两个数据结构：
 
 1. `__webpack_modules__`: 维护一个所有模块的数组。将入口模块解析为 AST，根据 AST 深度优先搜索所有的模块，并构建出这个模块数组。每个模块都由一个包裹函数 `(module, module.exports, __webpack_require__)` 对模块进行包裹构成。

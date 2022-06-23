@@ -1,5 +1,7 @@
 # AST及其应用
 
+转载自[山月前端工程化三十八讲](https://q.shanyue.tech/engineering/)
+
 `AST` 是 `Abstract Syntax Tree` 的简称，是前端工程化绕不过的一个名词。它涉及到工程化诸多环节的应用，比如:
 
 1. 如何将 Typescript 转化为 Javascript (typescript)

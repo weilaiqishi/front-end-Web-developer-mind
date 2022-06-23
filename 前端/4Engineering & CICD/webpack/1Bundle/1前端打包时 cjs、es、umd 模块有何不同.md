@@ -1,5 +1,7 @@
 # 模块化方案
 
+转载自[山月前端工程化三十八讲](https://q.shanyue.tech/engineering/)
+
 前端打包时 cjs、es、umd 模块有何不同
 
 ## cjs (commonjs)

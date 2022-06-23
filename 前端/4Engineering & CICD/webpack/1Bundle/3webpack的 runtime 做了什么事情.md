@@ -1,5 +1,7 @@
 # webpack 的 runtime 做了什么事情
 
+转载自[山月前端工程化三十八讲](https://q.shanyue.tech/engineering/)
+
 ## Webpack Runtime
 
 `webpack` 的 runtime，也就是 webpack 最后生成的代码，做了以下三件事:
