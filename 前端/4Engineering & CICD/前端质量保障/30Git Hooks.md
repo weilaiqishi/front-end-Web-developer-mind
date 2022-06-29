@@ -1,5 +1,7 @@
 # git hooks 原理是什么
 
+转载自[山月前端工程化三十八讲](https://q.shanyue.tech/engineering/)
+
 `git` 允许在各种操作之前添加一些 `hook` 脚本，如未正常运行则 git 操作不通过。最出名的还是以下两个
 
 - `precommit`
