@@ -19,6 +19,7 @@
 - [JS 面试题手写callapplybind](./前端/1html&js/jscode/callapplybind.js)
 - [JS 面试题实现柯里化](./前端/1html&js/jscode/curry.js)
 - [JS 面试题实现深拷贝](./前端/1html&js/jscode/deepclone.js)
+- [JS 面试题手写EventEmitter](./前端/1html&js/jscode/EventEmitter.ts)
 - [JS 面试题手写promise](./前端/1html&js/jscode/promise/promise.js)
 - [JS 面试题实现防抖节流](./前端/1html&js/jscode/throttledebounce.js)
 - [TS 基础](./前端/1html&js/ts基础.md)
