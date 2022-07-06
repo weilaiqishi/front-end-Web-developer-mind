@@ -24,6 +24,10 @@
 - [JS 面试题实现防抖节流](./前端/1html&js/jscode/throttledebounce.js)
 - [TS 基础](./前端/1html&js/ts基础.md)
 
+## leetcode
+
+- [leetcode JS实现LRU](./前端/1html&js/算法/1数据结构系列/LRU.md)
+
 ## React
 
 - [React 设计理念](./前端/3mvvm/react/全栈潇晨/2.react%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5.md)
