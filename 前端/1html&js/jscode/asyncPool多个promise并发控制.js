@@ -1,6 +1,6 @@
 // async-pool 有npm包 https://github.com/rxaviers/async-pool/blob/master/lib/es9.js
 
-function promiseConcurrence(arr, max, callback = () => {}) { // arr存储的是调用后返回promise的函数
+function asyncPool(arr, max, callback = () => {}) { // arr存储的是调用后返回promise的函数
     // 存储并发max的promise数组
     let promiseArr = [], i = 0;
 
