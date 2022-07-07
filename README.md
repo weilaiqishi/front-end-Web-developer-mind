@@ -12,6 +12,7 @@
 - [JS 基础 数据类型](./前端/1html&js/js基础-数据类型.md)
 - [JS 基础 执行上下文与作用域](./前端/1html&js/js基础-执行上下文与作用域.md)
 - [JS 面试题手写数组方法](./前端/1html&js/jscode/array/)
+- [JS 面试题手写数组方法 拍平](./前端/1html&js/jscode/array/flat.js)
 - [JS 面试题依赖优先级排序](./前端/1html&js/jscode/examination/依赖优先级排序.js)
 - [JS 面试题手写callapplybind](./前端/1html&js/jscode/callapplybind.js)
 - [JS 面试题手写柯里化](./前端/1html&js/jscode/curry.js)
