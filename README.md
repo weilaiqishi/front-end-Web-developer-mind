@@ -37,6 +37,7 @@
 - [React 7.Fiber架构](./前端/3mvvm/react/全栈潇晨/7.Fiber%E6%9E%B6%E6%9E%84.md)
 - [React 8.render阶段](./前端/3mvvm/react/全栈潇晨/8.render%E9%98%B6%E6%AE%B5.md)
 - [React 9.diff算法](./前端/3mvvm/react/全栈潇晨/9.diff%E7%AE%97%E6%B3%95.md)
+- [React 事件系统](./前端/3mvvm/react/React%E4%BA%8B%E4%BB%B6%E7%B3%BB%E7%BB%9F.md)
 
 ## Vue
 
