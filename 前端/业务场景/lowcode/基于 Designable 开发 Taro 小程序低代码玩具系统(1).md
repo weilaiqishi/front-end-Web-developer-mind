@@ -9,8 +9,8 @@
 可视化设计器（体积很大，注意流量，最好用PC打开） <https://miku01.cn/taroifyDesignable/index.html>
 demo H5（按 F12 切换设备仿真） <https://miku01.cn/taroifyDemo/index.html#/pages/index/index>
 
-![](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/taroify-formily-designable.png)
-![](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/taroify-formily-demo-weapp.png)
+![](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/taroify-formily-designable.png)
+![](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/taroify-formily-demo-weapp.png)
 
 ## 组件库准备 taroify-formily
 
@@ -113,7 +113,7 @@ export default Form
 ### FormItem
 
 `taroify` 提供了一些表单组件
-![taroifyui-FormItem](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/taroifyui-FormItem.png)
+![taroifyui-FormItem](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/taroifyui-FormItem.png)
 
 如图所见FormItem的作用就是显示label、必填、校验文案等，并且让表单布局更加美观，我们需要混入Formily能力。
 
@@ -442,7 +442,7 @@ export const SchemaField = createSchemaField({
 
 **那么如何营造 `Taro h5` 氛围呢？**
 首先 `@tarojs/components` 使⽤了 `Stencil` 去实现了⼀个基于 `WebComponents` 且遵循微信⼩程序规范的组件库，用 `reactify-wc` 让React项目中能够使用 `WebComponent`，`stenciljs` 打包的组件产物中有 `defineCustomElements`，调用一下才可以把 `WebComponents` 注册到浏览器中
-![taro-h5-webComponents](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/taro-h5-webComponents.png)
+![taro-h5-webComponents](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/taro-h5-webComponents.png)
 我们在设计器项目中需要把该方法导出来用一下，还需要引入Taro组件样式
 
 在设计器 `main.tsx` 中
@@ -662,7 +662,7 @@ Form.Resource = createResource({
 ```
 
 so，表单组件在 `designable` 中有一些样式可以配置
-![taroify-formily-designable-Form-settings](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/taroify-formily-designable-Form-settings.png)
+![taroify-formily-designable-Form-settings](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/taroify-formily-designable-Form-settings.png)
 
 #### Input组件封装物料
 
@@ -724,14 +724,14 @@ Input.Resource = createResource(
 `createFieldSchema` 中封装了很多field模型的行为，例如 title(label)、校验规则、联动逻辑等在 `designable` 中如何配置。提前介绍一下如何微操低代码页面
 
 首先准备两个Input，一个叫a，一个叫b
-![](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/howToReaction/1.png)
-![](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/howToReaction/2.png)
+![](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/howToReaction/1.png)
+![](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/howToReaction/2.png)
 第二部点击b组件右侧的响应器配置，配置它的显示规则为当a字段的值为`hidden`时隐藏
-![](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/howToReaction/3.png)
+![](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/howToReaction/3.png)
 在拖拉拽面板中是designable提供的react渲染器，切换到运行面板用Formily渲染器才有MVVM能力
-![](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/howToReaction/4.png)
+![](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/howToReaction/4.png)
 随着我们在a输入框中输入`hidden`，b输入框就会神奇的消失了
-![](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/howToReaction/5.png)
+![](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/howToReaction/5.png)
 
 ### designable正式使用物料
 
@@ -855,6 +855,6 @@ ReactDOM.render(<App />, document.getElementById('root'))
 ## 运行一下
 
 目前组件只有7个，先配置一些普通的页面吧
-![](https://cdn.jsdelivr.net/gh/weilaiqishi/lowcode-designable-taro-react/showImage/taroify-formily-designable.png)
+![](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/taroify-formily-designable.png)
 
 到这里设计器的第一步已经迈出来，下篇文章再介绍如何把这一套东西在消费端运行起来

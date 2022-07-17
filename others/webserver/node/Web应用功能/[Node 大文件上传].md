@@ -164,7 +164,7 @@ export default App;
 
 选中一个157MB的文件，被切成32个5MB的分片
 
-![fileslice](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/1fileslice.png)
+![fileslice](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/1fileslice.png)
 
 ### 上传切片并展示进度条
 
@@ -223,7 +223,7 @@ yarn develop
 
 首次进入后台可以注册管理员
 
-![strapi注册管理员](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.1strapiResister.png)
+![strapi注册管理员](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.1strapiResister.png)
 
 3.创建一个表准备用来管理大文件上传
 
@@ -233,16 +233,16 @@ yarn develop
 组件是一种可用于多种集合类型和单一类型的数据结构。
 创建 `strapi内容类型` 同时会生成一套增删查改接口、创建数据库表。
 我们要建一个叫 `bigfile` 的 `内容类型`。点击左侧菜单 `Content Type Builder` ，然后点击 `Create new collection type` ，输入名字
-![strapiCreateCollection](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.2strapiCreateCollection.png)
+![strapiCreateCollection](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.2strapiCreateCollection.png)
 
 `strapi` 会默认带上一个 `起草/发布` 系统，这次不需要把它关了
-![strapiCreateCollection](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.3strapiCreateCollectionClosePublishSystem.png)
+![strapiCreateCollection](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.3strapiCreateCollectionClosePublishSystem.png)
 
 给表添加一些字段，用来存储上传的文件信息
-![strapiCreateCollection](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.4strapiCreateCollectionAddField.png)
+![strapiCreateCollection](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.4strapiCreateCollectionAddField.png)
 
 点击右上角 `save` 按钮保存，我们会看到代码中多了一些文件
-![strapiSrcApi](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.5strapiSrcApi.png)
+![strapiSrcApi](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.5strapiSrcApi.png)
 
 4.了解一下 `strapi` 自带的上传功能
 
@@ -250,10 +250,10 @@ yarn develop
 `strapi` 利用插件系统集成了上传功能 [plugin-upload](https://docs.strapi.io/developer-docs/latest/plugins/upload.html#configuration)
 
 点击后台左侧菜单的 `Media Library`
-![strapiMediaUpload](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.6strapiMediaUpload.png)
+![strapiMediaUpload](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.6strapiMediaUpload.png)
 
 当上传一张图片后可以看到在 `backend/public/uploads` 下多了一些图片文件
-![trapiUploadFilePath](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.7strapiUploadFilePath.png)
+![trapiUploadFilePath](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.7strapiUploadFilePath.png)
 
 我们在 `public/uploads` 目录下创建 `bigfile/chunk` 文件夹用来存放大文件切片
 
@@ -365,7 +365,7 @@ module.exports = {
 ```
 
 `strapi` 还自带一个权限系统，接口默认是不给访问的，为了前端对接简单我们要给 `public` 开放权限
-![strapiRole](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.9strapiRole.png)
+![strapiRole](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.9strapiRole.png)
 
 #### 前端
 
@@ -426,10 +426,10 @@ export function asyncPool(arr: any, max = 2, callback = () => { }) {
 接写来修改一下 `frontend/src/App.tsx`
 
 引入工具类
-![引入工具类](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.10frontUpload.png)
+![引入工具类](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.10frontUpload.png)
 
 修改 handleUpload 方法，在调用服务端接口前先处理一下文件切片信息以支持进度条展示
-![handleUpload](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.11frontUpload.png)
+![handleUpload](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.11frontUpload.png)
 
 实现上传切片文件，我们实现的后端接口地址是 `http://localhost:1337/api/bigfile/upload`
 
@@ -467,7 +467,7 @@ export function asyncPool(arr: any, max = 2, callback = () => { }) {
 ```
 
 最后写一下进度条UI
-![进度条UI](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.12frontUpload.png)
+![进度条UI](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.12frontUpload.png)
 
 完整的 `frontend/src/App/tsx` 如下
 
@@ -621,8 +621,8 @@ export default App;
 
 选择一个视频上传一下
 可以看到后台指定目录多了一堆文件
-![frontUploaded](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.13frontUploaded.png)
-![trapiUploadFilePath](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/2.8uploadTest.png)
+![frontUploaded](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.13frontUploaded.png)
+![trapiUploadFilePath](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/2.8uploadTest.png)
 
 ### 合并切片
 
@@ -690,13 +690,13 @@ const UPLOAD_DIR_MEGRE = path.resolve(__dirname, '../../../../public/uploads/big
 ```
 
 同样的给 `public` 开放权限
-![strapiRole](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/3.1strapiRole.png)
+![strapiRole](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/3.1strapiRole.png)
 
 前端处理
 
 在 `frontend/src/App.tsx` 中引入 `axios`
 改写上传切片方法，等切片都上传完后调用一下 `megre` api
-![2frontMegreApi](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/3.2frontMegreApi.png)
+![2frontMegreApi](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/3.2frontMegreApi.png)
 完整代码如下
 
 ```tsx
@@ -866,7 +866,7 @@ export default App;
 ```
 
 再上传一次文件，可以看到完整的文件出现在了指定目录
-![strapiMegreFile](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/3.3strapiMegreFile.png)
+![strapiMegreFile](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/3.3strapiMegreFile.png)
 
 ### 文件列表
 
@@ -879,7 +879,7 @@ export default App;
 并在底层使用查询引擎 API 来执行数据库查询。[指南](https://docs.strapi.io/developer-docs/latest/developer-resources/database-apis-reference/entity-service-api.html)
 我们改一下 `megre` 方法，利用 `strapi` 提供的API往数据库里存数据
 `backend/src/api/bigfile/controllers/bigfile.js`
-![strapiMegreSaveRecord](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/4.1strapiMegreSaveRecord.png)
+![strapiMegreSaveRecord](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/4.1strapiMegreSaveRecord.png)
 
 `strapi内容类型` 自带核心路由器（即 find、findOne、create、update 和 delete）对应于 Strapi 在创建新内容类型时自动创建的默认路由，同样的也有默认控制器和操作，
 所以我们可以白嫖一个查询列表接口
@@ -895,7 +895,7 @@ export default App;
 ```
 
 接口开放权限
-![strapiRole](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/4.2strapiRole.png)
+![strapiRole](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/4.2strapiRole.png)
 
 前端对接文件列表接口，写一个 `文件列表组件` ，需要用到新依赖 `ahooks`
 
@@ -961,8 +961,8 @@ export const strapiNoticeList = async (
 ```
 
 `App.tsx` 中导入api文件， 写一个文件列表组件
-![front](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/4.3front.png)
-![front](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/4.4front.png)
+![front](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/4.3front.png)
+![front](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/4.4front.png)
 
 ```tsx
 const BigfileList = ({ eventBus }: { eventBus: EventEmitter<any> }) => {
@@ -1024,9 +1024,9 @@ const BigfileList = ({ eventBus }: { eventBus: EventEmitter<any> }) => {
 }
 ```
 
-![front](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/4.5front.png)
+![front](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/4.5front.png)
 把服务端之前上传的文件都删了，再前端重新上传一遍
-![front](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/4.6frontFileList.png)
+![front](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/4.6frontFileList.png)
 可以看到文件列表已经好了
 
 ### 秒传功能
@@ -1042,7 +1042,7 @@ const BigfileList = ({ eventBus }: { eventBus: EventEmitter<any> }) => {
 先修改一下服务端
 
 给 `strapi内容类型` bigfile添加一个hashMd5长文本字段
-![strapiCollectionAddFiled](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/5.1strapiCollectionAddFiled.png)
+![strapiCollectionAddFiled](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/5.1strapiCollectionAddFiled.png)
 
 在 `merge` 合并切片接口中后端要把前端计算好的文件md5存到数据库里
 在 `verify` 验证是否有相同文件接口中就简单的从数据库查找文件名相同的记录进而对比md5值
@@ -1186,9 +1186,9 @@ export async function calculateHash(file: Blob, fileName: string, chunkSize = 5 
 在 `handleUpload` 文件切片之前调用 `verify` 接口，参数是文件名和md5值，来判断该文件是否已经上传过了。
 如果已经上传过了就打上标记，在上传切片 `uploadChunks` 方法中就过滤掉上传过的文件不处理。
 调整一下UI展示，根据标记来展示哪个文件是秒传的
-![frontHandleUpload](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/5.2frontHandleUpload.png)
-![frontUploadChunks](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/5.3frontUploadChunks.png)
-![frontThunderUpload](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/5.4frontThunderUpload.png)
+![frontHandleUpload](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/5.2frontHandleUpload.png)
+![frontUploadChunks](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/5.3frontUploadChunks.png)
+![frontThunderUpload](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/5.4frontThunderUpload.png)
 
 完整的 `App.tsx` 代码
 
@@ -1468,9 +1468,9 @@ export default App;
 
 试验一下，我们把后端上传文件和 `bigfile` 记录清理一下
 重新上传视频文件，可以看到新的 `bigfile` 中已经保存了 `md5` 了
-![strapiHashMd5](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/5.5strapiHashMd5.png)
+![strapiHashMd5](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/5.5strapiHashMd5.png)
 接着第二次上传该视频文件，前端就提示秒传了该文件
-![frontUploadMessage](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/5.6frontUploadMessage.png)
+![frontUploadMessage](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/5.6frontUploadMessage.png)
 
 ### 暂停续传
 
@@ -1502,10 +1502,10 @@ export default App;
 为了配合改动，前端处理完的切片对象加一个 `isUploadedChunk` 属性，用来判断是否上传过了，
 在 `续传` 时根据这个属性来让进度直接拉到100%并且不该切片文件上传到服务端。
 
-![frontState](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/6.3frontState.png)
-![frontHandleUpload](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/6.4frontHandleUpload.png)
-![frontUploadChunks](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/6.5frontUploadChunks.png)
-![6.6frontPause](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/6.6frontPause.png)
+![frontState](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/6.3frontState.png)
+![frontHandleUpload](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/6.4frontHandleUpload.png)
+![frontUploadChunks](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/6.5frontUploadChunks.png)
+![6.6frontPause](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/6.6frontPause.png)
 
 完整的 `App.tsx` 代码
 
@@ -1813,8 +1813,8 @@ export default App;
 
 把之前的上传记录和文件清除一下，上传一个文件并测试一下暂停续传
 
-![frontUploadPauseXhr](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/6.1frontUploadPauseXhr.png)
-![frontUploadAxiosCancel](https://cdn.jsdelivr.net/gh/weilaiqishi/strapi-upload-big-file/showImg/6.2frontUploadAxiosCancel.png)
+![frontUploadPauseXhr](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/6.1frontUploadPauseXhr.png)
+![frontUploadAxiosCancel](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/strapi-upload-big-file/showImg/6.2frontUploadAxiosCancel.png)
 
 这里可以看到已经开始上传的请求并没有取消
 
