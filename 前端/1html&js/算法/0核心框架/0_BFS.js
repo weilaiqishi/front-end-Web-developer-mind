@@ -10,13 +10,15 @@
 // 将s[j]向上拨动一次
 function plusOne(str, index) {
     const arr = str.split('')
-    arr[index] = arr[index] == 9 ? 0 : arr[index] - 0 + 1
+    const num = Number(arr[index])
+    arr[index] = num === 9 ? 0 : num + 1
     return arr.join('')
 }
 // 将s[j]向下拨动一次
 function minusOne(str, index) {
     const arr = str.split('')
-    arr[index] = arr[index] == 0 ? 9 : arr[index] - 1
+    const num = Number(arr[index])
+    arr[index] = num === 0 ? 9 : arr[index] - 1
     return arr.join('')
 }
 
@@ -74,7 +76,6 @@ function minusOne(str, index) {
 // 双向BFS Set 740 ms	52.8 MB
 const openLock = function (deadends, target) {
     if (deadends.includes(target)) { return -1 }
-    const deads = new Set(deadends)
     const q = []
     const visited = new Set()
     // 从起点开始启动广度优先搜索
@@ -91,11 +92,13 @@ const openLock = function (deadends, target) {
     while (q.length && q1.length) {
         /* 判断是否到达终点 */
         if (q.some(item => q1.includes(item))) {
-            return step - 0 + step1
+            return step + step1
         }
         if (q.some(item => item === target)) { return step }
-        step = run(deadends, q, visited, step)
-        step1 = run(deadends, q1, visited1, step1)
+        run(deadends, q, visited, step)
+        run(deadends, q1, visited1, step1)
+        step++
+        step1++
     }
     return -1
 }
@@ -120,9 +123,8 @@ function run(deadends, q, visited, step) {
             })
         }
     }
-    return step + 1
 }
 
 console.log(openLock(["0201", "0101", "0102", "1212", "2002"], "0202"), 6)
-// console.log(openLock(["0000"], "8888"), -1)
-// console.log(openLock(["8888"], "0009"), 1)
+console.log(openLock(["0000"], "8888"), -1)
+console.log(openLock(["8888"], "0009"), 1)
