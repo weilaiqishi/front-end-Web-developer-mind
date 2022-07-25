@@ -207,3 +207,301 @@ const HooksDispatcherOnUpdate = {
 
 我们用流程图来描述整个过程：
 ![React函数组件渲染流程图](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/adcbd09984f84d0d97a15df124e83c09~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+
+## hooks初始化，我们写的hooks会变成什么样子
+
+围绕四个中重点 `hooks` 展开，分别是负责组件更新的 `useState` ，负责执行副作用 `useEffect` ,负责保存数据的 `useRef` ,负责缓存优化的 `useMemo` ，至于 `useCallback` , `useReducer` ,`useLayoutEffect` 原理和那四个重点hooks比较相近
+
+来一个例子组件
+
+```js
+import React , { useEffect , useState , useRef , useMemo  } from 'react'
+function Index(){
+    const [ number , setNumber ] = useState(0)
+    const DivDemo = useMemo(() => <div> hello , i am useMemo </div>,[])
+    const curRef  = useRef(null)
+    useEffect(()=>{
+       console.log(curRef.current)
+    },[])
+    return <div ref={ curRef } >
+        hello,world { number } 
+        { DivDemo }
+        <button onClick={() => setNumber(number+1) } >number++</button>
+     </div>
+}
+```
+
+接下来我们一起研究一下我们上述写的四个hooks最终会变成什么
+
+### mountWorkInProgressHook
+
+在组件初始化的时候,每一次 `hooks` 执行，如 `useState()`,`useRef()`, 都会调用 `mountWorkInProgressHook`,`mountWorkInProgressHook` 到底做了写什么，让我们一起来分析一下：
+`react-reconciler/src/ReactFiberHooks.js -> mountWorkInProgressHook`
+
+```js
+function mountWorkInProgressHook() {
+  const hook: Hook = {
+    memoizedState: null,  // useState中 保存 state信息 ｜ useEffect 中 保存着 effect 对象 ｜ useMemo 中 保存的是缓存的值和deps ｜ useRef中保存的是ref 对象
+    baseState: null,
+    baseQueue: null,
+    queue: null,
+    next: null,
+  };
+  if (workInProgressHook === null) { // 例子中的第一个`hooks`-> useState(0) 走的就是这样。
+    currentlyRenderingFiber.memoizedState = workInProgressHook = hook;
+  } else {
+    workInProgressHook = workInProgressHook.next = hook;
+  }
+  return workInProgressHook;
+}
+```
+
+`mountWorkInProgressHook` 这个函数做的事情很简单，首先每次执行一个 `hooks` 函数，都产生一个 `hook` 对象，里面保存了当前 `hook` 信息,然后将每个 `hooks` 以链表形式串联起来，并赋值给 `workInProgress` 的 `memoizedState` 。也就证实了上述所说的，函数组件用`memoizedState` 存放 `hooks` 链表。
+至于hook对象中都保留了那些信息？我这里先分别介绍一下
+:
+
+**memoizedState**: `useState`中 保存 `state` 信息 ｜ `useEffect` 中 保存着 `effect` 对象 ｜ `useMemo` 中 保存的是缓存的值和 `deps` ｜ `useRef` 中保存的是 `ref` 对象。
+**baseQueue**: `usestate` 和 `useReducer` 中 保存最新的更新队列。
+**baseState**: `usestate` 和 `useReducer` 中,一次更新中 ，产生的`最新state值`。
+**queue**: 保存待更新队列 `pendingQueue` ，更新函数 `dispatch` 等信息。
+**next**: 指向下一个 `hooks` 对象。
+
+![hooks与workInProgress](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5660f1be680140239a8cf4e34cfccc90~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+
+知道每个hooks关系之后，我们应该理解了，为什么**不能条件语句中，声明hooks**。
+我们用一幅图表示如果在条件语句中声明会出现什么情况发生。
+如果我们将上述demo其中的一个 useRef 放入条件语句中，
+
+```js
+ let curRef  = null
+ if(isFisrt){
+  curRef = useRef(null)
+ }
+```
+
+条件语句中声明hooks的后果如下
+![条件语句中声明hooks的后果](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/54a38675154a483885a3c5c9a80f360e~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+
+**因为一旦在条件语句中声明 `hooks` ，在下一次函数组件更新，`hooks` 链表结构，将会被破坏，`current树` 的 `memoizedState` 缓存 `hooks` 信息，和当前 `workInProgress` 不一致，如果涉及到读取 `state` 等操作，就会发生异常。**
+
+### 初始化useState -> mountState
+
+**mountState**
+
+```js
+function mountState(
+  initialState
+){
+  const hook = mountWorkInProgressHook();
+  if (typeof initialState === 'function') {
+    // 如果 useState 第一个参数为函数，执行函数得到state
+    initialState = initialState();
+  }
+  hook.memoizedState = hook.baseState = initialState;
+  const queue = (hook.queue = {
+    pending: null,  // 带更新的
+    dispatch: null, // 负责更新函数
+    lastRenderedReducer: basicStateReducer, //用于得到最新的 state ,
+    lastRenderedState: initialState, // 最后一次得到的 state
+  });
+
+  const dispatch = (queue.dispatch = (dispatchAction.bind( // 负责更新的函数
+    null,
+    currentlyRenderingFiber,
+    queue,
+  )))
+  return [hook.memoizedState, dispatch];
+}
+```
+
+`mountState` 到底做了些什么，首先会得到初始化的 `state` ，将它赋值给 `mountWorkInProgressHook` 产生的 `hook` 对象的 `memoizedState` 和 `baseState` 属性，然后创建一个 `queue` 对象，里面保存了负责更新的信息。
+
+这里先说一下，在无状态组件中，`useState` 和 `useReducer` 触发函数更新的方法都是 `dispatchAction` , `useState` 可以看成一个简化版的 `useReducer` ,至于 `dispatchAction怎么更新state`，更新组件的，我们接着往下研究
+
+```js
+function dispatchAction<S, A>(
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A,
+)
+
+const [ number , setNumber ] = useState(0)
+```
+
+`dispatchAction` 就是 `setNumber` , `dispatchAction` 第一个参数和第二个参数，已经被 `bind` 给改成 `currentlyRenderingFiber` 和 `queue` , 我们传入的参数是第三个参数 `action`
+
+**dispatchAction 无状态组件更新机制**
+作为更新的主要函数，我们一下来研究一下，把 `dispatchAction` 精简，精简，再精简
+
+```js
+function dispatchAction(fiber, queue, action) {
+  // 计算 expirationTime 过程略过。
+  /* 创建一个update */
+  const update= {
+    expirationTime,
+    suspenseConfig,
+    action,
+    eagerReducer: null,
+    eagerState: null,
+    next: null,
+  }
+  /* 把创建的update */
+  const pending = queue.pending;
+  if (pending === null) {  // 证明第一次更新
+    update.next = update;
+  } else { // 不是第一次更新
+    update.next = pending.next;
+    pending.next = update;
+  }
+  
+  queue.pending = update;
+  const alternate = fiber.alternate;
+  /* 判断当前是否在渲染阶段 */
+  if ( fiber === currentlyRenderingFiber || (alternate !== null && alternate === currentlyRenderingFiber)) {
+    didScheduleRenderPhaseUpdate = true;
+    update.expirationTime = renderExpirationTime;
+    currentlyRenderingFiber.expirationTime = renderExpirationTime;
+  } else { /* 当前函数组件对应fiber没有处于调和渲染阶段 ，那么获取最新state , 执行更新 */
+    if (fiber.expirationTime === NoWork && (alternate === null || alternate.expirationTime === NoWork)) {
+      const lastRenderedReducer = queue.lastRenderedReducer;
+      if (lastRenderedReducer !== null) {
+        let prevDispatcher;
+        try {
+          const currentState = queue.lastRenderedState; /* 上一次的state */
+          const eagerState = lastRenderedReducer(currentState, action); /**/
+          update.eagerReducer = lastRenderedReducer;
+          update.eagerState = eagerState;
+          if (is(eagerState, currentState)) { 
+            return
+          }
+        } 
+      }
+    }
+    scheduleUpdateOnFiber(fiber, expirationTime);
+  }
+}
+```
+
+无论是类组件调用 `setState` ,还是函数组件的 `dispatchAction` ，都会产生一个 `update` 对象，里面记录了此次更新的信息，然后将此 `update` 放入待更新的 `pending` 队列中，`dispatchAction` 第二步就是判断当前函数组件的 `fiber` 对象是否处于渲染阶段，如果处于渲染阶段，那么不需要我们在更新当前函数组件，只需要更新一下当前 `update` 的 `expirationTime` 即可。
+
+如果当前 `fiber` 没有处于更新阶段。那么通过调用 `lastRenderedReducer` 获取最新的 `state` ,和上一次的 `currentState`，进行浅比较，如果相等，那么就退出，这就证实了为什么 `useState`，两次值相等的时候，组件不渲染的原因了，这个机制和 `Class组件` 的 `setState` 有一定的区别。
+
+如果两次 `state` 不相等，那么调用 `scheduleUpdateOnFiber` 调度渲染当前 `fiber` `，scheduleUpdateOnFiber` 是 `react` 渲染更新的主要函数。
+
+### 初始化useEffect -> mountEffect
+
+**mountEffect**
+
+```js
+function mountEffect(
+  create,
+  deps,
+) {
+  const hook = mountWorkInProgressHook();
+  const nextDeps = deps === undefined ? null : deps;
+  hook.memoizedState = pushEffect(
+    HookHasEffect | hookEffectTag, 
+    create, // useEffect 第一次参数，就是副作用函数
+    undefined,
+    nextDeps, // useEffect 第二次参数，deps
+  );
+}
+```
+
+每个 `hooks` 初始化都会创建一个 `hook` 对象，然后将 `hook` 的 `memoizedState` 保存当前 `effect hook` 信息。
+
+**有两个`memoizedState`大家千万别混淆了**
+
+- `workInProgress / current` 树上的 `memoizedState` 保存的是当前函数组件每个 `hooks` 形成的链表。
+- 每个 `hooks` 上的 `memoizedState` 保存了当前 `hooks` 信息，不同种类的 `hooks` 的 `memoizedState` 内容不同。
+
+上述的方法最后执行了一个 `pushEffect` ，我们一起看看pushEffect做了些什么？
+
+**pushEffect 创建effect对象，挂载updateQueue**
+
+```js
+function pushEffect(tag, create, destroy, deps) {
+  const effect = {
+    tag,
+    create,
+    destroy,
+    deps,
+    next: null,
+  };
+  let componentUpdateQueue = currentlyRenderingFiber.updateQueue
+  if (componentUpdateQueue === null) { // 如果是第一个 useEffect
+    componentUpdateQueue = {  lastEffect: null  }
+    currentlyRenderingFiber.updateQueue = componentUpdateQueue
+    componentUpdateQueue.lastEffect = effect.next = effect;
+  } else {  // 存在多个effect
+    const lastEffect = componentUpdateQueue.lastEffect;
+    if (lastEffect === null) {
+      componentUpdateQueue.lastEffect = effect.next = effect;
+    } else {
+      const firstEffect = lastEffect.next;
+      lastEffect.next = effect;
+      effect.next = firstEffect;
+      componentUpdateQueue.lastEffect = effect;
+    }
+  }
+  return effect;
+}
+```
+
+这一段实际很简单，首先创建一个 `effect` ，判断组件如果第一次渲染，那么创建 `componentUpdateQueue` ，就是 `workInProgress` 的 `updateQueue` 。然后将 `effect` 放入 `updateQueue` 中。
+
+假设我们在一个函数组件中这么写：
+
+```js
+useEffect(()=>{
+    console.log(1)
+},[ props.a ])
+useEffect(()=>{
+    console.log(2)
+},[])
+useEffect(()=>{
+    console.log(3)
+},[])
+```
+
+最后 `workInProgress.updateQueue` 会以这样的形式保存：
+![workInProgress.updateQueue](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/14ac9e04c10e45e5b93fc76d47a5fdd5~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+
+拓展:effectList
+
+`effect list` 可以理解为是一个存储 `effectTag` 副作用列表容器。它是由 `fiber` 节点和指针 `nextEffect` 构成的单链表结构，这其中还包括第一个节点 `firstEffect` ，和最后一个节点 `lastEffect`。
+`React` 采用深度优先搜索算法，在 `render` 阶段遍历 `fiber` 树时，把每一个有副作用的 `fiber` 筛选出来，最后构建生成一个只带副作用的 `effect list` 链表。
+在 `commit` `阶段，React` 拿到 `effect list` 数据后，通过遍历 `effect list`，并根据每一个 `effect` 节点的 `effectTag` 类型，执行每个`effect`，从而对相应的 `DOM` 树执行更改。
+
+### 初始化useMemo -> mountMemo
+
+它的逻辑实际简单的很。
+
+```js
+function mountMemo(nextCreate,deps){
+  const hook = mountWorkInProgressHook();
+  const nextDeps = deps === undefined ? null : deps;
+  const nextValue = nextCreate();
+  hook.memoizedState = [nextValue, nextDeps];
+  return nextValue;
+}
+```
+
+初始化 `useMemo`，就是创建一个 `hook` ，然后执行 `useMemo` 的第一个参数,得到需要缓存的值，然后将值和 `deps` 记录下来，赋值给当前 `hook` 的 `memoizedState`。整体上并没有复杂的逻辑。
+
+### 初始化useRef -> mountRef
+
+```js
+function mountRef(initialValue) {
+  const hook = mountWorkInProgressHook();
+  const ref = {current: initialValue};
+  hook.memoizedState = ref;
+  return ref;
+}
+```
+
+`mountRef` 初始化很简单, 创建一个ref对象， 对象的 `current` 属性来保存初始化的值，最后用 `memoizedState` 保存 `ref` ，完成整个操作。
+
+### mounted 阶段 hooks 总结
+
+我们来总结一下初始化阶段 `react-hooks` 做的事情，在一个函数组件第一次渲染执行上下文过程中，每个 `react-hooks` 执行，都会产生一个 `hook` 对象，并形成链表结构，绑定在 `workInProgress` 的 `memoizedState` 属性上，然后 `react-hooks` 上的状态，绑定在当前 `hooks` 对象的 `memoizedState` 属性上。对于 `effect` 副作用钩子，会绑定在 `workInProgress.updateQueue` 上，等到 `commit` 阶段，`dom` 树构建完成，在执行每个 `effect` 副作用钩子。
