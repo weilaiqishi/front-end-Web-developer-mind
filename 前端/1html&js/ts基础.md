@@ -105,8 +105,12 @@ type Exclude<T, U> = T extends U ? never : T;
 
 type Omit<T, K extends number | string | symbol> = {
     [Key in Exclude<keyof T, K>]: T[Key]
-}
+};
+
+type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any;
 ```
+
+理解为：如果 T 继承了 (...args: any[]) => any 类型，则返回类型 R，否则返回 any。其中 R 是什么呢？R 被定义在 extends (...args: any[]) => infer R 中，即 R 是从传入参数类型中推导出来的。
 
 ## 类
 
