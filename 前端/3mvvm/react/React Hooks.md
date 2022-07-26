@@ -505,3 +505,318 @@ function mountRef(initialValue) {
 ### mounted 阶段 hooks 总结
 
 我们来总结一下初始化阶段 `react-hooks` 做的事情，在一个函数组件第一次渲染执行上下文过程中，每个 `react-hooks` 执行，都会产生一个 `hook` 对象，并形成链表结构，绑定在 `workInProgress` 的 `memoizedState` 属性上，然后 `react-hooks` 上的状态，绑定在当前 `hooks` 对象的 `memoizedState` 属性上。对于 `effect` 副作用钩子，会绑定在 `workInProgress.updateQueue` 上，等到 `commit` 阶段，`dom` 树构建完成，在执行每个 `effect` 副作用钩子。
+
+## hooks更新阶段
+
+对于更新阶段，说明上一次 `workInProgress树` 已经赋值给了 `current树` 。存放 `hooks` 信息的 `memoizedState` ，此时已经存在 `current树` 上，`react` 对于 `hooks` 的处理逻辑和 `fiber` 树逻辑类似。
+
+对于一次函数组件更新，当再次执行 `hooks` 函数的时候，比如 `useState(0)` ，首先要从 `current` 的 `hooks` 中找到与当前 `workInProgressHook对应的currentHooks`
+，然后复制一份 `currentHooks` 给 `workInProgressHook` ,接下来 `hooks` 函数执行的时候,把最新的状态更新到 `workInProgressHook` ，保证 `hooks` 状态不丢失。
+所以函数组件每次更新，每一次 `react-hooks` 函数执行，都需要有一个函数去做上面的操作，这个函数就是 `updateWorkInProgressHook` ,我们接下来一起看这个`updateWorkInProgressHook` 。
+
+### updateWorkInProgressHook
+
+```js
+function updateWorkInProgressHook() {
+  let nextCurrentHook;
+  if (currentHook === null) {  /* 如果 currentHook = null 证明它是第一个hooks */
+    const current = currentlyRenderingFiber.alternate;
+    if (current !== null) {
+      nextCurrentHook = current.memoizedState;
+    } else {
+      nextCurrentHook = null;
+    }
+  } else { /* 不是第一个hooks，那么指向下一个 hooks */
+    nextCurrentHook = currentHook.next;
+  }
+  let nextWorkInProgressHook
+  if (workInProgressHook === null) {  //第一次执行hooks
+    // 这里应该注意一下，当函数组件更新也是调用 renderWithHooks ,memoizedState属性是置空的
+    nextWorkInProgressHook = currentlyRenderingFiber.memoizedState;
+  } else { 
+    nextWorkInProgressHook = workInProgressHook.next;
+  }
+
+  if (nextWorkInProgressHook !== null) { 
+      /* 这个情况说明 renderWithHooks 执行 过程发生多次函数组件的执行 ，我们暂时先不考虑 */
+    workInProgressHook = nextWorkInProgressHook;
+    nextWorkInProgressHook = workInProgressHook.next;
+    currentHook = nextCurrentHook;
+  } else {
+    invariant(
+      nextCurrentHook !== null,
+      'Rendered more hooks than during the previous render.',
+    );
+    currentHook = nextCurrentHook;
+    const newHook = { //创建一个新的hook
+      memoizedState: currentHook.memoizedState,
+      baseState: currentHook.baseState,
+      baseQueue: currentHook.baseQueue,
+      queue: currentHook.queue,
+      next: null,
+    };
+    if (workInProgressHook === null) { // 如果是第一个hooks
+      currentlyRenderingFiber.memoizedState = workInProgressHook = newHook;
+    } else { // 重新更新 hook
+      workInProgressHook = workInProgressHook.next = newHook;
+    }
+  }
+  return workInProgressHook;
+}
+```
+
+这一段的逻辑大致是这样的：
+
+- 首先如果是第一次执行 `hooks` 函数，那么从 `current树` 上取出 `memoizedState` ，也就是旧的 `hooks` 。
+- 然后声明变量 `nextWorkInProgressHook` ，这里应该值得注意，正常情况下，一次 `renderWithHooks` 执行，`workInProgress` 上的 `memoizedState` 会被置空，`hooks` 函数顺序执行，`nextWorkInProgressHook` 应该一直为 `null` ，那么什么情况下 `nextWorkInProgressHook` 不为 `null` ,也就是当一次 `renderWithHooks` 执行过程中，执行了多次函数组件，也就是在 `renderWithHooks` 中这段逻辑。
+
+```js
+  if (workInProgress.expirationTime === renderExpirationTime) { 
+       // ....这里的逻辑我们先放一放
+  }
+```
+
+这里面的逻辑，实际就是判定，如果当前函数组件执行后，当前函数组件的还是处于渲染优先级，说明函数组件又有了新的更新任务，那么循坏执行函数组件。这就造成了上述的，`nextWorkInProgressHook` 不为 `null` 的情况。
+
+最后复制 `current` 的 `hooks` ，把它赋值给 `workInProgressHook` ,用于更新新的一轮 `hooks` 状态。
+
+接下来我们看一下四个种类的hooks，在一次组件更新中，分别做了那些操作。
+
+### updateState
+
+```js
+function updateReducer(
+  reducer,
+  initialArg,
+  init,
+){
+  const hook = updateWorkInProgressHook();
+  const queue = hook.queue;
+  queue.lastRenderedReducer = reducer;
+  const current = currentHook;
+  let baseQueue = current.baseQueue;
+  const pendingQueue = queue.pending;
+  if (pendingQueue !== null) {
+     // 这里省略... 第一步：将 pending  queue 合并到 basequeue
+  }
+  if (baseQueue !== null) {
+    const first = baseQueue.next;
+    let newState = current.baseState;
+    let newBaseState = null;
+    let newBaseQueueFirst = null;
+    let newBaseQueueLast = null;
+    let update = first;
+    do {
+      const updateExpirationTime = update.expirationTime;
+      if (updateExpirationTime < renderExpirationTime) { //优先级不足
+        const clone  = {
+          expirationTime: update.expirationTime,
+          ...
+        };
+        if (newBaseQueueLast === null) {
+          newBaseQueueFirst = newBaseQueueLast = clone;
+          newBaseState = newState;
+        } else {
+          newBaseQueueLast = newBaseQueueLast.next = clone;
+        }
+      } else {  //此更新确实具有足够的优先级。
+        if (newBaseQueueLast !== null) {
+          const clone= {
+            expirationTime: Sync, 
+             ...
+          };
+          newBaseQueueLast = newBaseQueueLast.next = clone;
+        }
+        /* 得到新的 state */
+        newState = reducer(newState, action);
+      }
+      update = update.next;
+    } while (update !== null && update !== first);
+    if (newBaseQueueLast === null) {
+      newBaseState = newState;
+    } else {
+      newBaseQueueLast.next = newBaseQueueFirst;
+    }
+    hook.memoizedState = newState;
+    hook.baseState = newBaseState;
+    hook.baseQueue = newBaseQueueLast;
+    queue.lastRenderedState = newState;
+  }
+  const dispatch = queue.dispatch
+  return [hook.memoizedState, dispatch];
+}
+```
+
+这一段看起来很复杂，让我们慢慢吃透，首先将上一次更新的 `pending queue` 合并到 `basequeue`，为什么要这么做，比如我们再一次点击事件中这么写
+
+```js
+function Index(){
+   const [ number ,setNumber ] = useState(0)
+   const handerClick = ()=>{
+    //    setNumber(1)
+    //    setNumber(2)
+    //    setNumber(3)
+       setNumber(state=>state+1)
+       // 获取上次 state = 1 
+       setNumber(state=>state+1)
+       // 获取上次 state = 2
+       setNumber(state=>state+1)
+   }
+   console.log(number) // 3 
+   return <div>
+       <div>{ number }</div>
+       <button onClick={ ()=> handerClick() } >点击</button>
+   </div>
+}
+```
+
+点击按钮， 打印 3
+
+三次 `setNumber` 产生的 `update` 会暂且放入 `pending queue` ，在下一次函数组件执行时候，三次 update被合并到 baseQueue。结构如下图：
+
+![updateReducer pending queue](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/52ed6118238d412aa20044ad33f25827~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+
+接下来会把当前 `useState` 或是 `useReduer` 对应的 `hooks` 上的 `baseState` 和 `baseQueue` 更新到最新的状态。会循环 `baseQueue` 的 `update` ，复制一份 `update` ,更新
+`expirationTime`，对于有足够优先级的 `update`（上述三个 `setNumber` 产生的 `update` 都具有足够的优先级），我们要获取最新的 `state` 状态。，会一次执行 `useState` 上的每一个 `action` 。得到最新的 `state` 。
+
+更新state
+
+![更新state](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6d78fac49ce648ea89bce06a25e1128d~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+
+这里有会有两个疑问🤔️:
+
+问题一：这里不是执行最后一个 `action` 不就可以了嘛?
+答案： 原因很简单，上面说了 `useState` 逻辑和 `useReducer` 差不多。如果第一个参数是一个函数，会引用上一次 `update` 产生的 `state`, 所以需要**循环调用，每一个`update`的`reducer`**，如果 `setNumber(2)` 是这种情况，那么只用更新值，如果是 `setNumber(state=>state+1)` ,那么传入上一次的 `state` 得到最新 `state` 。
+
+问题二：什么情况下会有优先级不足的情况(`updateExpirationTime < renderExpirationTime`)？
+
+答案： 这种情况，一般会发生在，当我们调用 `setNumber` 时候，调用 `scheduleUpdateOnFiber` 渲染当前组件时，又产生了一次新的更新，所以把最终执行 `reducer` 更新 `state` 任务交给下一次更新。
+
+### updateEffect
+
+```js
+function updateEffect(create, deps): void {
+  const hook = updateWorkInProgressHook();
+  const nextDeps = deps === undefined ? null : deps;
+  let destroy = undefined;
+  if (currentHook !== null) {
+    const prevEffect = currentHook.memoizedState;
+    destroy = prevEffect.destroy;
+    if (nextDeps !== null) {
+      const prevDeps = prevEffect.deps;
+      if (areHookInputsEqual(nextDeps, prevDeps)) {
+        pushEffect(hookEffectTag, create, destroy, nextDeps);
+        return;
+      }
+    }
+  }
+  currentlyRenderingFiber.effectTag |= fiberEffectTag
+  hook.memoizedState = pushEffect(
+    HookHasEffect | hookEffectTag,
+    create,
+    destroy,
+    nextDeps,
+  );
+}
+```
+
+`useEffect` 做的事很简单，判断两次 `deps` 相等，如果相等说明此次更新不需要执行，则直接调用 `pushEffect` ,这里注意 `effect` 的标签，`hookEffectTag`,如果不相等，那么更新 `effect` ,并且赋值给 `hook.memoizedState` ，这里标签是 `HookHasEffect | hookEffectTag` ,然后在 `commit` 阶段，`react` 会通过标签来判断，是否执行当前的 `effect` 函数。
+
+### updateMemo
+
+```js
+function updateMemo(
+  nextCreate,
+  deps,
+) {
+  const hook = updateWorkInProgressHook();
+  const nextDeps = deps === undefined ? null : deps; // 新的 deps 值
+  const prevState = hook.memoizedState; 
+  if (prevState !== null) {
+    if (nextDeps !== null) {
+      const prevDeps = prevState[1]; // 之前保存的 deps 值
+      if (areHookInputsEqual(nextDeps, prevDeps)) { //判断两次 deps 值
+        return prevState[0];
+      }
+    }
+  }
+  const nextValue = nextCreate();
+  hook.memoizedState = [nextValue, nextDeps];
+  return nextValue;
+}
+```
+
+在组件更新过程中，我们执行 `useMemo` 函数，做的事情实际很简单，就是判断两次 `deps` 是否相等，如果不相等，证明依赖项发生改变，那么执行 `useMemo` 的第一个函数，得到新的值，然后重新赋值给 `hook.memoizedState` ,如果相等 证明没有依赖项改变，那么直接获取缓存的值。
+不过这里有一点，值得注意，`nextCreate()` 执行，如果里面引用了 `usestate` 等信息，变量会被引用，无法被垃圾回收机制回收，就是闭包原理，那么访问的属性有可能不是最新的值，所以需要把引用的值，添加到依赖项 `dep` 数组中。每一次 `dep` 改变，重新执行，就不会出现问题了。
+
+### updateRef
+
+```js
+function updateRef(initialValue){
+  const hook = updateWorkInProgressHook()
+  return hook.memoizedState
+}
+```
+
+函数组件更新 `useRef` 做的事情更简单，就是返回了缓存下来的值，也就是无论函数组件怎么执行，执行多少次，`hook.memoizedState` 内存中都指向了一个对象，所以解释了`useEffect` , `useMemo` 中，为什么 `useRef` 不需要依赖注入，就能访问到最新的改变值。
+
+一次点击事件更新
+
+![一次点击事件更新](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a02c58be8c6f455f96c2e691b2ac6f7b~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+
+
+## 总结
+
+原文 [react源码解析13.hooks源码](https://xiaochen1024.com/courseware/60b1b2f6cf10a4003b634718/60b1b374cf10a4003b634725)
+
+1.**hook调用入口**
+`hook` 存在于 `Dispatcher` 对象中，全局变量 `ReactCurrentDispatcher.current` 会根据是 `mount` 还是 `update` 赋值为 `HooksDispatcherOnMount` 或`HooksDispatcherOnUpdate`
+
+2.**hook数据结构**
+​在 `FunctionComponent` 中，多个 `hook` 会形成 `hook` 链表，保存在 `Fiber`(`workInProgress树`/`current树`) 的 `memoizedState` 的上，而需要更新的 Update 保存在`hook.queue.pending` 中。`hook` 对象上又有 `memoizedState`（与Fiber树上的不是一回事）
+
+```js
+const hook: Hook = {
+  memoizedState: null,//对于不同hook，有不同的值
+  baseState: null,//初始state
+  baseQueue: null,//初始queue队列
+  queue: null,//需要更新的update
+  next: null,//下一个hook
+};
+```
+
+**useState**：例如`const [state, updateState] = useState(initialState)`，`memoizedState` 等于 `state` 的值
+**useReducer**：例如 `const [state, dispatch] = useReducer(reducer, {});`，`memoizedState` 等于 `state` 的值
+**useEffect**：在 `mountEffect` 时会调用 `pushEffect` 创建 `effect链表`，`memoizedState` 就等于 `effect链表`，`effect链表` 也会挂载到 `fiber.updateQueue` 上，每个 `effect` 上存在 `useEffect` 的 `第一个参数回调` 和 `第二个参数依赖数组`，例如，`useEffect(callback, [dep])``，effect` 就是 `{create:callback, dep:dep,...}`
+**useRef**：例如 `useRef(0)`，`memoizedState` 就等于 `{current: 0}`
+**useMemo**：例如 `useMemo(callback, [dep])`，`memoizedState` 等于 `[callback(), dep]`
+**useCallback**：例如 `useCallback(callback, [dep])`，`memoizedState` 等于 `[callback, dep]`。`useCallback` 保存 `callback函数` ，`useMemo` 保存 `callback的执行结果`
+
+3.useState&useReducer
+
+- useState&useReducer声明。`resolveDispatcher` 函数会获取当前的 `Dispatcher`。
+- mount。​ `mount阶段` `useState` 调用 `mountState` ，`useReducer` 调用 `mountReducer`，唯一区别就是它们创建的 `queue` 中 `lastRenderedReducer` `不一样，mount` 有初始值 `basicStateReducer`，所以说 `useState` 就是有``默认reducer参数` 的 `useReducer` 。
+- update。`update` 时会根据 `hook` 中的 `update` 计算新的 `state`
+- 执行。`useState` 执行 `setState` 后会调用 `dispatchAction` ，`dispatchAction` 做的事情就是将 `Update` 加入 `queue.pending` 中，然后开始调度
+
+4.useEffect
+
+- 声明。也是通过 `Dispatcher` 获取 `useEffect` 函数
+- mount。调用 `mountEffect` ，`mountEffect` 调用 `mountEffectImpl` ，`hook.memoizedState` 赋值为 `effect链表`
+- update。浅比较依赖，如果依赖性变了 `pushEffect` 第一个参数传 `HookHasEffect | hookFlags`，`HookHasEffect` 表示 `useEffect` 依赖项改变了，需要在 `commit阶段` 重新执行
+- 执行。在 `commit阶段` 的c `ommitLayoutEffects` 函数中会调用 `schedulePassiveEffects` ，将 `useEffect` 的 `销毁和回调函数` push到`pendingPassiveHookEffectsUnmount` 和 `pendingPassiveHookEffectsMount` 中，然后在 `mutation` 之后调用 `flushPassiveEffects` 依次执行 `上次render` 的`销毁函数回调` 和 `本次render` 的 `回调函数`
+
+`useLayoutEffect` 和 `useEffect` 一样，只是调用的时机不同，它是在 `commit阶段` 的 `commitLayout` 函数中同步执行
+
+5.useRef
+
+- 声明阶段和其他hook一样
+- mount。​ `mount` 时会调用 `mountRef` ，创建 `hook` 和 `ref对象` 。`render阶段` 将带有 `ref属性的Fiber` 标记上 `Ref Tag`，这一步发生在 `beginWork` 和`completeWork` 函数中的 `markRef`。 `commit阶段` ​ 会在 `commitMutationEffects` 函数中判断ref是否改变，如果改变了会先执行 `commitDetachRef` 先删除之前的ref，然后在 `commitLayoutEffect` 中会执行 `commitAttachRef` 赋值ref。
+- update。​ `update` 时调用 `updateRef` 获取 `当前useRef`，然后返回 `hook链表`
+
+6.useMemo&useCallback
+
+- 声明阶段和其他hook一样
+- mount。`mountWorkInProgressHook` 创建 `hook对象` ，把 `value` 或 `callback` 和依赖保存在 `memoizedState` 中
+- update。`updateWorkInProgressHook` 获取 `hook` , 浅比较依赖， 没变返回之前的状态，有变化再更新 `value` 或 `callback` 和依赖到 `hook.memoizedState`
+
