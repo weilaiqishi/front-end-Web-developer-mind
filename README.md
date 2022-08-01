@@ -38,6 +38,11 @@
 - [React 8.render阶段](./前端/3mvvm/react/全栈潇晨/8.render%E9%98%B6%E6%AE%B5.md)
 - [React 9.diff算法](./前端/3mvvm/react/全栈潇晨/9.diff%E7%AE%97%E6%B3%95.md)
 - [React 10.commit阶段](./前端/3mvvm/react/全栈潇晨/10.commit%E9%98%B6%E6%AE%B5.md)
+- [React 11.生命周期调用顺序](./前端/3mvvm/react/全栈潇晨/11.%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E8%B0%83%E7%94%A8%E9%A1%BA%E5%BA%8F.md)
+- [React 12.状态更新流程](./前端/3mvvm/react/全栈潇晨/12.%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E6%B5%81%E7%A8%8B.md)
+- [React 15.scheduler&Lane](./前端/3mvvm/react/全栈潇晨/15.scheduler%26Lane.md)
+- [React 16.concurrent模式](./前端/3mvvm/react/全栈潇晨/16.concurrent%E6%A8%A1%E5%BC%8F.md)
+- [React 17.context](./前端/3mvvm/react/全栈潇晨/17.context.md)
 - [React Hooks](./前端/3mvvm/react/React%20Hooks.md)
 - [React 事件系统](./前端/3mvvm/react/React%E4%BA%8B%E4%BB%B6%E7%B3%BB%E7%BB%9F.md)
 

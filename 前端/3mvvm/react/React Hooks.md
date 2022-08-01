@@ -2,6 +2,8 @@
 
 原文 [「react进阶」一文吃透react-hooks原理](https://juejin.cn/post/6944863057000529933)
 
+[烤透 React Hook](https://juejin.cn/post/6867745889184972814)
+
 ## 什么是hooks？
 
 Hook 是 React 16.8 的新增特性。它可以让你在不编写 class 的情况下使用 state 以及其他的 React 特性。
@@ -256,9 +258,13 @@ function mountWorkInProgressHook() {
 }
 ```
 
-`mountWorkInProgressHook` 这个函数做的事情很简单，首先每次执行一个 `hooks` 函数，都产生一个 `hook` 对象，里面保存了当前 `hook` 信息,然后将每个 `hooks` 以链表形式串联起来，并赋值给 `workInProgress` 的 `memoizedState` 。也就证实了上述所说的，函数组件用`memoizedState` 存放 `hooks` 链表。
-至于hook对象中都保留了那些信息？我这里先分别介绍一下
-:
+`mountWorkInProgressHook` 这个函数做的事情很简单，首先每次执行一个 `hooks` 函数，都产生一个 `hook` 对象，里面保存了当前 `hook` 信息，并把它添加到 `hook 链表`上，最后赋值给 `workInProgress` 的 `memoizedState` 。也就证实了上述所说的，函数组件用`memoizedState` 存放 `hooks` 链表。
+
+**整个 Hook 链表保存在哪里**
+假如原来还没有 Hook 链表，那么就会将新建的 Hook 节点作为 Hook 链表的头结点，然后把 Hook 链表的头结点保存在 `currentlyRenderingFiber.memoizedState` 中，也就是当前 `FiberNode` 的 `memoizedState` 属性
+![FiberNode memoizedState](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9eea7cf990904202bc0cc0a0f0b0f188~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+
+至于hook对象中都保留了那些信息？我这里先分别介绍一下:
 
 **memoizedState**: `useState`中 保存 `state` 信息 ｜ `useEffect` 中 保存着 `effect` 对象 ｜ `useMemo` 中 保存的是缓存的值和 `deps` ｜ `useRef` 中保存的是 `ref` 对象。
 **baseQueue**: `usestate` 和 `useReducer` 中 保存最新的更新队列。
@@ -292,19 +298,26 @@ function mountWorkInProgressHook() {
 function mountState(
   initialState
 ){
+  // 获取当前 Hook 节点
   const hook = mountWorkInProgressHook();
+
+  // 初始化 Hook 的状态，即读取初始 state 值
   if (typeof initialState === 'function') {
     // 如果 useState 第一个参数为函数，执行函数得到state
     initialState = initialState();
   }
   hook.memoizedState = hook.baseState = initialState;
+
+  // 创建一个新的链表作为更新队列，用来存放更新（setXxx()）
   const queue = (hook.queue = {
-    pending: null,  // 带更新的
-    dispatch: null, // 负责更新函数
-    lastRenderedReducer: basicStateReducer, //用于得到最新的 state ,
-    lastRenderedState: initialState, // 最后一次得到的 state
+    pending: null,  // 最近一个等待执行的更新
+    dispatch: null, // 更新 state 的方法
+    lastRenderedReducer: basicStateReducer, // 组件最近一次渲染时用的 reducer，用于得到最新的 state
+    lastRenderedState: initialState, // 组件最近一次渲染的 state
   });
 
+  // 创建一个 dispatch 方法（即 useState 返回的数组的第二个参数：setXxx()），
+  // 该方法的作用是用来修改 state，并将此更新添加到更新队列中，另外还会将改更新和当前正在渲染的 fiber 绑定起来
   const dispatch = (queue.dispatch = (dispatchAction.bind( // 负责更新的函数
     null,
     currentlyRenderingFiber,
@@ -314,7 +327,7 @@ function mountState(
 }
 ```
 
-`mountState` 到底做了些什么，首先会得到初始化的 `state` ，将它赋值给 `mountWorkInProgressHook` 产生的 `hook` 对象的 `memoizedState` 和 `baseState` 属性，然后创建一个 `queue` 对象，里面保存了负责更新的信息。
+`mountState` 到底做了些什么，首先会得到初始化的 `state` ，将它赋值给 `mountWorkInProgressHook` 产生的 `hook` 对象的 `memoizedState` 和 `baseState` 属性，然后创建一个 `queue` 对象，即用了一个新的链表作为更新队列，里面保存了负责更新的信息。最后创建一个 `dispatch` 方法，该方法的用途是用来修改 `state`，并将此更新操作添加到更新队列中，另外还会将该更新和当前正在渲染的 `fiber` 绑定起来
 
 这里先说一下，在无状态组件中，`useState` 和 `useReducer` 触发函数更新的方法都是 `dispatchAction` , `useState` 可以看成一个简化版的 `useReducer` ,至于 `dispatchAction怎么更新state`，更新组件的，我们接着往下研究
 
@@ -692,6 +705,12 @@ function Index(){
 
 答案： 这种情况，一般会发生在，当我们调用 `setNumber` 时候，调用 `scheduleUpdateOnFiber` 渲染当前组件时，又产生了一次新的更新，所以把最终执行 `reducer` 更新 `state` 任务交给下一次更新。
 
+更新队列另一个图示
+![更新队列另一个图示1](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c9983d318e42479fab153c78595186d7~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+![更新队列另一个图示2](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/819931bc993a41f4acf10dea79cc28d5~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+![更新队列另一个图示3](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/80c34843040441fca45857a6670e6cf9~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+![更新队列另一个图示4](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/8f82e0f4dcc84443b6d6848ee54e44d9~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
+
 ### updateEffect
 
 ```js
@@ -764,7 +783,6 @@ function updateRef(initialValue){
 
 ![一次点击事件更新](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a02c58be8c6f455f96c2e691b2ac6f7b~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp)
 
-
 ## 总结
 
 原文 [react源码解析13.hooks源码](https://xiaochen1024.com/courseware/60b1b2f6cf10a4003b634718/60b1b374cf10a4003b634725)
@@ -820,3 +838,111 @@ const hook: Hook = {
 - mount。`mountWorkInProgressHook` 创建 `hook对象` ，把 `value` 或 `callback` 和依赖保存在 `memoizedState` 中
 - update。`updateWorkInProgressHook` 获取 `hook` , 浅比较依赖， 没变返回之前的状态，有变化再更新 `value` 或 `callback` 和依赖到 `hook.memoizedState`
 
+## 手写hooks
+
+原文<https://xiaochen1024.com/courseware/60b1b2f6cf10a4003b634718/60b1b37acf10a4003b634726>
+
+```jsx
+import React from "react";
+import ReactDOM from "react-dom";
+
+let workInProgressHook;//当前工作中的hook
+let isMount = true;//是否时mount时
+
+const fiber = {//fiber节点
+  memoizedState: null,//hook链表
+  stateNode: App//dom
+};
+
+const Dispatcher = (() => {//Dispatcher对象
+  function mountWorkInProgressHook() {//mount时调用
+    const hook = {//构建hook
+      queue: {//更新队列
+        pending: null//未执行的update队列
+      },
+      memoizedState: null,//当前state
+      next: null//下一个hook
+    };
+    if (!fiber.memoizedState) {
+      fiber.memoizedState = hook;//第一个hook的话直接赋值给fiber.memoizedState
+    } else {
+      workInProgressHook.next = hook;//不是第一个的话就加在上一个hook的后面，形成链表
+    }
+    workInProgressHook = hook;//记录当前工作的hook
+    return workInProgressHook;
+  }
+  function updateWorkInProgressHook() {//update时调用
+    let curHook = workInProgressHook;
+    workInProgressHook = workInProgressHook.next;//下一个hook
+    return curHook;
+  }
+  function useState(initialState) {
+    let hook;
+    if (isMount) {
+      hook = mountWorkInProgressHook();
+      hook.memoizedState = initialState;//初始状态
+    } else {
+      hook = updateWorkInProgressHook();
+    }
+
+    let baseState = hook.memoizedState;//初始状态
+    if (hook.queue.pending) {
+      let firstUpdate = hook.queue.pending.next;//第一个update
+
+      do {
+        const action = firstUpdate.action;
+        baseState = action(baseState);
+        firstUpdate = firstUpdate.next;//循环update链表
+      } while (firstUpdate !== hook.queue.pending);//通过update的action计算state
+
+      hook.queue.pending = null;//重置update链表
+    }
+    hook.memoizedState = baseState;//赋值新的state
+
+    return [baseState, dispatchAction.bind(null, hook.queue)];//useState的返回
+  }
+
+  return {
+    useState
+  };
+})();
+
+function dispatchAction(queue, action) {//触发更新
+  const update = {//构建update
+    action,
+    next: null
+  };
+  if (queue.pending === null) {
+    update.next = update;//update的环状链表
+  } else {
+    update.next = queue.pending.next;//新的update的next指向前一个update
+    queue.pending.next = update;//前一个update的next指向新的update
+  }
+  queue.pending = update;//更新queue.pending
+
+  isMount = false;//标志mount结束
+  workInProgressHook = fiber.memoizedState;//更新workInProgressHook
+  schedule();//调度更新
+}
+
+function App() {
+  let [count, setCount] = Dispatcher.useState(1);
+  let [age, setAge] = Dispatcher.useState(10);
+  return (
+    <>
+      <p>Clicked {count} times</p>
+      <button onClick={() => setCount(() => count + 1)}> Add count</button>
+      <p>Age is {age}</p>
+      <button onClick={() => setAge(() => age + 1)}> Add age</button>
+    </>
+  );
+}
+
+function schedule() {
+  ReactDOM.render(<App />, document.querySelector("#root"));
+}
+
+schedule();
+```
+
+演示 ![codesandbox](https://codesandbox.io/s/bold-paper-w5e9kk?file=/src/index.js)
