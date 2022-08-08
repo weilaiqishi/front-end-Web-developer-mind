@@ -108,8 +108,6 @@ function deepClone1 (target, map = new WeakMap()) {
             return cloneRegExp(target)
     }
 
-    console.log(type)
-
     // 克隆set
     if (type === setTag) {
         const cloneTarget = new Set()

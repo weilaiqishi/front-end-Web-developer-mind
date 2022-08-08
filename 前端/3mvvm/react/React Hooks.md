@@ -484,7 +484,7 @@ useEffect(()=>{
 
 `effect list` 可以理解为是一个存储 `effectTag` 副作用列表容器。它是由 `fiber` 节点和指针 `nextEffect` 构成的单链表结构，这其中还包括第一个节点 `firstEffect` ，和最后一个节点 `lastEffect`。
 `React` 采用深度优先搜索算法，在 `render` 阶段遍历 `fiber` 树时，把每一个有副作用的 `fiber` 筛选出来，最后构建生成一个只带副作用的 `effect list` 链表。
-在 `commit` `阶段，React` 拿到 `effect list` 数据后，通过遍历 `effect list`，并根据每一个 `effect` 节点的 `effectTag` 类型，执行每个`effect`，从而对相应的 `DOM` 树执行更改。
+在 `commit阶段`，React拿到 `effect list` 数据后，通过遍历 `effect list`，并根据每一个 `effect` 节点的 `effectTag` 类型，执行每个`effect`，从而对相应的 `DOM` 树执行更改。
 
 ### 初始化useMemo -> mountMemo
 
@@ -945,4 +945,4 @@ function schedule() {
 schedule();
 ```
 
-演示 ![codesandbox](https://codesandbox.io/s/bold-paper-w5e9kk?file=/src/index.js)
+演示 [codesandbox](https://codesandbox.io/s/bold-paper-w5e9kk?file=/src/index.js)

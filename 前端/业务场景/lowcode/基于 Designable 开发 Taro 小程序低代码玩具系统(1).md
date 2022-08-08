@@ -1,4 +1,4 @@
-# 基于 Designable 开发 Taro 小程序低代码玩具系统(1)
+# 基于 Designable 开发 Taro 小程序低代码玩具系统(1) - 物料组件库与designable可视化搭建器
 
 开搞开搞
 
@@ -855,7 +855,7 @@ ReactDOM.render(<App />, document.getElementById('root'))
 
 ## 运行一下
 
-目前组件只有7个，先配置一些普通的页面吧
-![](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/taroify-formily-designable.png)
+目前只有一些组件，先配置一些普通的页面吧
+![taroify-formily-designable](https://topfullstackkimeng.oss-cn-hangzhou.aliyuncs.com/md/lowcode-designable-taro-react/showImage/taroify-formily-designable.png)
 
 到这里前端页面可视化搭建系统的第一步已经迈出来，有了基本的`组件库`、`协议和渲染器`，并且在`设计器`中可以配置组件属性最终渲染界面，下篇文章再介绍如何让 `小程序` 和 `H5` 渲染设计器产出的`JSONSchema`。
