@@ -824,7 +824,62 @@ const hook: Hook = {
 - update。浅比较依赖，如果依赖性变了 `pushEffect` 第一个参数传 `HookHasEffect | hookFlags`，`HookHasEffect` 表示 `useEffect` 依赖项改变了，需要在 `commit阶段` 重新执行
 - 执行。在 `commit阶段` 的c `ommitLayoutEffects` 函数中会调用 `schedulePassiveEffects` ，将 `useEffect` 的 `销毁和回调函数` push到`pendingPassiveHookEffectsUnmount` 和 `pendingPassiveHookEffectsMount` 中，然后在 `mutation` 之后调用 `flushPassiveEffects` 依次执行 `上次render` 的`销毁函数回调` 和 `本次render` 的 `回调函数`
 
-`useLayoutEffect` 和 `useEffect` 一样，只是调用的时机不同，它是在 `commit阶段` 的 `commitLayout` 函数中同步执行
+**`useLayoutEffect` 和 `useEffect`**
+
+- `useLayoutEffect` 和 `componentDidMount` 和 `componentDidUpdate` 触发时机一致（都在在DOM修改后且浏览器渲染之前）
+- `useLayoutEffect` 要比 `useEffect` 更早的触发执行
+- `useLayoutEffect` 会阻塞浏览器渲染，切记执行同步的耗时操作
+- 除非要修改DOM并且不让用户看到修改DOM的过程，才考虑使用 `useLayoutEffect`，否则应当使用 `useEffect` 。如果只是为了获取DOM属性（或其它get操作），则没必要使用 `useLayoutEffect` ，应当使用 `useEffect` 。
+- [何时使用useLayoutEffect？](https://segmentfault.com/a/1190000023396433).
+
+例子1
+
+```js
+import React, { useState, useEffect, useLayoutEffect } from 'react'
+import ReactDOM from 'react-dom'
+
+function Com() {
+  useEffect(() => {
+    console.log('useEffect 执行...')
+    return () => {
+      console.log('useEffect 销毁...')
+    } 
+  })
+
+  useLayoutEffect(() => {
+    console.log('useLayoutEffect 执行...')
+    return () => {
+      console.log('useLayoutEffect 销毁...')
+    } 
+  })
+
+  return (
+    <div>
+      {console.log('Com 渲染')}
+    </div>
+  )
+}
+
+const App = props => {
+  const [count, setCount] = useState(0)
+  return (
+    <div>
+      <Com />
+      {count}
+      <button onClick={() => setCount(count + 1)}>count + 1</button>
+    </div>
+  )
+}
+```
+
+上面的例子中在 Com 组件中同时使用了 `useLayoutEffect` 和 `useEffect` ，在页面初次渲染时可以看到控制台打印顺序为 Com 渲染 → `useLayoutEffect` 执行… → `useEffect` 执行…。
+当点击 App 组件按钮更新状态导致 Com 重新渲染，打印顺序为 Com 渲染 → `useLayoutEffect` 销毁… → `useLayoutEffect` 执行… → `useEffect` 销毁… → `useEffect` 执行…。
+
+如果在Class组件里面执行，在首次渲染时控制台的打印顺序为 App 渲染 → Com 渲染 → `useLayoutEffect` 执行… → App `componentDidMount` → `useEffect` 执行…。
+而点击按钮更改状态触发重渲染时，打印顺序为 App 渲染 → Com 渲染 → `useLayoutEffect` 销毁… → `useLayoutEffect` 执行… → App `componentDidUpdate` → `useEffect` 销毁… → `useEffect` 执行…。
+
+**useEffect 与 Taro**
+`useEffect`、 `useLayoutEffect` 都是 React 根据 DOM API 执行情况来触发的，而 Taro 3 DOM 层是在小程序逻辑层模拟的，`setData` 完成后才能用 `selectorQuery` 获取小程序 DOM 的尺寸信息。你可以试试在 `useEffect` 里调用 `Taro.nextTick`，在 `nextTick` 继续获取小程序 DOM，这个 `nextTick` 应该能确保是 `setData` 回调里执行。
 
 5.useRef
 
