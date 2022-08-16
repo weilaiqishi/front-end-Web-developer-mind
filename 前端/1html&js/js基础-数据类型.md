@@ -444,15 +444,17 @@ for循环出key
 自身
 可枚举属性
 返回key数组
-3.`Object.values()`
+`Object.values()`
 返回value数组
-4.`Object.entries()`
+`Object.entries()`
 返回下标0是key、下标1是value的数组的数组
-5.`Object.getOwnPropertyNames`
+3.`Object.getOwnPropertyNames`
 自身
-所有属性
+所有属性 不包括Symbol
 返回key数组
-6.反射
+4.反射 `Reflect.ownKeys`
+获取自身所有属性名称，包括不可枚举属性，Symbol
+其实就是 `Object.getOwnPropertyNames` 与 `Object.getOwnPropertySymbols` 之和
 
 **对象属性的顺序**
 在ES5和早期标准中，没有指定属性的顺序
@@ -487,6 +489,21 @@ Symbol：当属性的类型是Symbol时，
 对于 === 来说就简单多了，就是判断两者类型和值是否相同
 
 NaN和任何比都是false
+
+`Object.is(valueA,valueB)` 以与严格相等运算符相同的方式检查相等性的参数，但有两个区别。
+
+首先，`NaN` 等于另一个 `NaN` 值：
+
+```js
+Object.is(NaN, NaN); // => true
+Object.is(NaN, 1);   // => false
+```
+
+其次，`Object.is()` 区分 `-0` 和 `+0`：
+
+```js
+Object.is(-0, +0); // => false
+```
 
 ### typeof instanceof Object.prototype.toString.call()
 

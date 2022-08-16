@@ -28,8 +28,10 @@
 
 ## leetcode
 
+- [leetcode 动态规划](./前端/1html&js/算法/0核心框架/0_动态规划.md)
 - [leetcode 双指针链表](./前端/1html&js/算法/0核心框架/0_双指针链表.md)
 - [leetcode 双指针数组](./前端/1html&js/算法/0核心框架/0_双指针数组.md)
+- [leetcode nSum](./前端/1html&js/算法/0核心框架/0_nSum.md)
 - [leetcode JS实现LRU](./前端/1html&js/算法/1数据结构系列/LRU.md)
 
 ## React
@@ -85,6 +87,8 @@
 
 - [lowcode designable-formily-taro-react](./前端/业务场景/lowcode/基于%20Designable%20开发%20Taro%20小程序低代码玩具系统(0).md)
 - [lowcode designable-formily-taro-react](./前端/业务场景/lowcode/基于%20Designable%20开发%20Taro%20小程序低代码玩具系统(1).md)
+- [lowcode designable-formily-taro-react](./前端/业务场景/lowcode/基于%20Designable%20开发%20Taro%20小程序低代码玩具系统(2).md)
+- [ssr ssr入门](./前端/业务场景/ssr/ssr入门.md)
 
 ## 导图文件要用xmind打开
 
