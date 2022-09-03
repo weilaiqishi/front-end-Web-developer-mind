@@ -16,15 +16,25 @@ Vue原理大致有 运行时（数据驱动）、编译模块、响应式系统
 
 #### 响应式数据的原理
 
-流程
+响应式原理就是 数据驱动视图，我们修改数据视图随之响应更新
 
-1.由于 Vue 执行一个组件的 `render` 函数是由 `Watcher` 去代理执行的，`Watcher` 在执行前会把 `Watcher` 自身先赋值给 `Dep.target` 这个全局变量，等待响应式属性去收集它
-2.这样在哪个组件执行 `render` 函数时访问了响应式属性，响应式属性就会精确的收集到当前全局存在的 `Dep.target` 作为自身的依赖
-3.在响应式属性发生更新时通知 `Watcher` 去重新调用 `vm._update(vm._render())`进行组件的视图更新
+vue2
+
+Vue2的响应式是基于 `Object.defineProperty` 实现的，只对初始对象里的属性有监听作用，对象新增属性的修改需要使用 `Vue.$set` 来设值。
+组件在 `render` 的时候会访问模板中的数据，触发 `getter` 把 `render watcher` 作为 `依赖收集`
+对响应式数据修改的时候，会触发 `setter`，通知 `render watcher` 更新，进而触发了组件的重新渲染
+
+> - Vue 执行一个组件的 `render` 函数是由 `Watcher` 去代理执行的，`Watcher` 在执行前会把 `Watcher` 自身先赋值给 `Dep.target` 这个全局变量，等待响应式属性去收集它
+> - 这样在哪个组件执行 `render` 函数时访问了响应式属性，响应式属性就会精确的收集到当前全局存在的 `Dep.target` 作为自身的依赖
+> - 在响应式属性发生更新时通知 `Watcher` 去重新调用 `vm._update(vm._render())`进行组件的视图更新
+
+vue3
+
+- Vue3劫持数据的方式改成用 `Proxy` 实现，以及收集的依赖由 `watcher` 实例变成了组件 `副作用渲染函数`
 
 #### computed和watch有什么区别
 
-
+计算属性和watch实际上都有监听属性变化的能力。计算属性可以当做Vue实例上的响应式数据使用(通过 `Object.defineProperty` 定义了同名属性)，会自动监听计算属性函数调用到的响应式数据的变更，并且会返回计算属性函数的返回值；watcher是显式的为要监听的数据创建一个Watcher监听数据变更，不能作为vue实例上的响应式数据值使用，在数据变化时执行异步或开销较大的操作时，这个方式是最有用的。
 
 #### 异步渲染与nextTick实现原理
 
@@ -36,6 +46,45 @@ nextTick实现原理
 这个队列可能是 `microTask` 微任务队列，也可能是 `macroTask` 队列，前两个 api (`Promise的then`、`MutationObserver的回调函数`)属于微任务队列，后两个 api (`setImmediate`、`setTimeout`)属于宏任务队列。
 
 [简化实现一个异步合并任务队列](https://juejin.cn/post/6844904118704668685#heading-2)
+
+[异步队列更新&性能优化](https://juejin.cn/post/7102020649866461215)
+
+##### Vue3中异步队列性能优化
+
+**queueWatcher 的 `has[id]`、`waiting`**
+
+每个 `watcher` 被创建时，都会获取一个唯一自增的 `id`，这个值是唯一的，无论是用户 `watcher` 还是 `渲染 watcher` 都有；
+
+响应式数据的 `setter` 被触发，最终调用 `dep.notity` -> `watcher.update` -> `queueWatcher(this)`;
+
+`queueWatcher` 把 `this`（`watcher 实例`）添加到 `queue`，在添加之前会判断缓存对象 has 中是否已经存在该 `watcher.id`，如果判断出 `has[id]` 不存在，再 `push` 到 `queue`，并且 `has[id] = watcher.id`
+
+```ts
+export function queueWatcher (watcher: Watcher) {
+  const id = watcher.id
+
+  // 如果 watcher 已经存在，则跳过，不会重复进入 queue
+  if (has[id] == null) {
+    // 缓存 watcher.id，用于判断 watcher 是否已经进入队列
+    has[id] = true
+    if (!flushing) {
+      queue.push(watcher)
+    }
+  }
+}
+```
+
+**用户 `watcher` 和 渲染 `watcher` 的顺序**
+
+消耗 `queue` 队列的 `flushSchedulerQueue` 方法中的得知，在触发 `watcher` 重新求值前会有一个给 `queue` 中的 `watcher` 按照 `id` 进行升序排序，所以 `id` 小的 `watcher` 将会被先执行
+
+所以现在问题变成了 `用户 watcher` 和 `渲染 watcher` 的 `id` 谁更小的问题。这个问题答案很显然，是`用户 watcher` `id` 更小。
+
+在 `Vue watcher` 的 `id` 是个自增的值，先被创建的 `watcher` 的 `id` 会更小； `用户 watcher` 是在初始化时初期进行响应式数据初始化的过程中创建的，而`渲染 watcher` 是在挂载阶段创建的，所以用户 `watcher id` 更小
+
+**合并一个 `tick` 多次修改**
+
+一个 `tick` 多次修改同一个数据，一个 `tick` 修改多个不同数据，最终 `queue` 中只有一个渲染 `watcher`；这个也就是常说的 `Vue` 性能优化的一个重要手段：合并同一个 `tick` 中对同一个响应式数据的多次更新
 
 ### 运行时
 

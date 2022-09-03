@@ -21,6 +21,63 @@
 //     // 后序位置
 // }
 
+// --- start 二叉树非递归遍历
+function preorderTraversal (root) {
+    const nodeStack: any[] = [root]
+    const res: any[] = []
+    if (!root) {
+        return res
+    }
+    while(nodeStack.length) {
+        const node = nodeStack.pop()
+        res.push(node)
+        if (node.right) {
+            nodeStack.push(node.right)
+        }
+        if (node.left) {
+            nodeStack.push(node.left)
+        }
+    }
+    return res
+}
+
+function inorderTraversal (root) {
+    const nodeStack: any[] = [root]
+    const res: any[] = []
+    if (!root) {
+        return res
+    }
+    let center = root
+    while (nodeStack.length && center) {
+        while (center !== null) {
+            nodeStack.push(center)
+            center = center.left
+        }
+        center = nodeStack.pop()
+        res.push(center.val)
+        center = center.right
+    }
+    return res
+}
+
+function postorderTraversal (root) {
+    const nodeStack: any[] = [root]
+    const res: any[] = []
+    if (root !== null) {
+        return []
+    }
+    nodeStack.push(root)
+    while (nodeStack.length > 0) {
+        const node = nodeStack.pop()
+        res.unshift(node.val)
+        if (node.left) {
+            nodeStack.push(node.left)
+            nodeStack.push(node.right)
+        }
+    }
+}
+// --- end 二叉树非递归遍历
+
 
 
 // 二叉树题目的递归解法可以分两类思路，第一类是遍历一遍二叉树得出答案，第二类是通过分解问题计算出答案，这两类思路分别对应着 回溯算法核心框架 和 动态规划核心框架。
