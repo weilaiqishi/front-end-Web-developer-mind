@@ -261,6 +261,9 @@ export default {
 那么，为什么我不能直接在业务项目中直接使用 `@babel/runtime` ，这样岂不是更好吗？
 答案肯定是否定的，任何事情都存在它的两面性。transform runtime 与环境无关，它并不会因为我们的页面的目标浏览器动态调整 `polyfill` 的内容，而 useBuiltIns 则会根据配置的目标浏览器而决定是否需要引入相应的 `polyfill`。
 
+[动态polyfill](https://zhuanlan.zhihu.com/p/351369109)
+<https://polyfill.alicdn.com/polyfill.min.js>
+
 #### `Polyfill` 最佳实践
 
 **业务**
