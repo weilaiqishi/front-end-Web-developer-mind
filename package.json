@@ -1,0 +1,19 @@
+{
+  "name": "front-end-web-developer-mind",
+  "version": "1.0.0",
+  "description": "前端学习思维导图 ➕ 博客",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weilaiqishi/front-end-Web-developer-mind.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/weilaiqishi/front-end-Web-developer-mind/issues"
+  },
+  "homepage": "https://github.com/weilaiqishi/front-end-Web-developer-mind#readme"
+}

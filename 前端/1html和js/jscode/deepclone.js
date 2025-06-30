@@ -163,15 +163,15 @@ function deepClone (target) {
                     cache.time++
                     node.result[key] = cache.data
                 } else {
-                    cache = {
-                        data: node.result[key],
-                        time: 1,
-                    }
                     node.result[key] = Array.isArray(value) ? [] : {}
                     loopList.push({
                         result: node.result[key],
                         target: value,
                     })
+                    cache = {
+                        data: node.result[key],
+                        time: 1,
+                    }
                 }
                 map.set(value, cache)
             }
